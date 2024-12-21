@@ -6,7 +6,7 @@ namespace VanillaBot
 {
     public class WikiCommand : InteractionModuleBase<SocketInteractionContext>
     {
-        [SlashCommand("Wiki", "получить ссылку на вики")]
+        [SlashCommand("wiki", "получить ссылку на вики")]
         public async Task SendTextMessageAsync()
         {
             string link = "https://vanilla-station.ru/";

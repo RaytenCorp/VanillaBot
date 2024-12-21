@@ -26,10 +26,9 @@ namespace VanillaBot
 
             // Формируем сообщение
             var user = Context.User as SocketUser;
-            string response = $" 🎲 | {user.Username} выбросил {result} из {max}!";
 
             // Отправляем результат
-            await RespondAsync(response, ephemeral: true);
+            await RespondAsync($" 🎲 | {user.Username} выбросил {result} из {max}!");
         }
     }
 }
