@@ -23,6 +23,10 @@ public static class ConfigLoader
                 GuildId = 123456789012345678,
                 AWarnsChannelId = 123456789012345678,
                 ReportChannelId = 123456789012345678,
+                RoleManagementPermissions = new Dictionary<ulong, List<ulong>>
+                {
+                    { 111111111111111111, new List<ulong> { 222222222222222222, 333333333333333333 } }
+                },
                 RolePermissions = new Dictionary<ulong, List<ulong>>
                 {
                     { 111111111111111111, new List<ulong> { 222222222222222222, 333333333333333333 } }
@@ -53,4 +57,5 @@ public class Config
     public required ulong AWarnsChannelId { get; set; }
     public required ulong ReportChannelId { get; set; } 
     public Dictionary<ulong, List<ulong>> RolePermissions { get; set; } = new();
+    public Dictionary<ulong, List<ulong>> RoleManagementPermissions { get; set; } = new();
 }

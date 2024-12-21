@@ -4,6 +4,7 @@ using Discord.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace VanillaBot;
 class Program
@@ -70,15 +71,8 @@ class Program
     // Метод, который вызывается, когда клиент готов
     private static async Task ReadyAsync()
     {
-        /*Регистрация команд */
-        await _commands.AddModuleAsync<PingCommand>(_services);
-        await _commands.AddModuleAsync<AwarnCommand>(_services);
-        await _commands.AddModuleAsync<UserAwarnsCommand>(_services);
-        await _commands.AddModuleAsync<WikiCommand>(_services);
-        await _commands.AddModuleAsync<RollCommand>(_services);
-        await _commands.AddModuleAsync<GetAvatarCommand>(_services);
-        await _commands.AddModuleAsync<ReportCommand>(_services);
-        
+        // Регистрация команд через InteractionService
+        await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), _services); // Используем _commands для регистрации команд
         
         if (_config?.GuildId != null)
             await _commands.RegisterCommandsToGuildAsync(_config.GuildId);
