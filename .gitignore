@@ -1,0 +1,14 @@
+#конфиги, счётчики и прочее
+data
+# всякое разное из сред разработок
+bin/
+obj/
+*.user
+*.suo
+publish/
+*.log
+tmp/
+temp/
+appsettings.Development.json
+.vscode/
+.idea/
