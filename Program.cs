@@ -77,6 +77,8 @@ class Program
         await _commands.AddModuleAsync<WikiCommand>(_services);
         await _commands.AddModuleAsync<RollCommand>(_services);
         await _commands.AddModuleAsync<GetAvatarCommand>(_services);
+        await _commands.AddModuleAsync<ReportCommand>(_services);
+        
         
         if (_config?.GuildId != null)
             await _commands.RegisterCommandsToGuildAsync(_config.GuildId);
