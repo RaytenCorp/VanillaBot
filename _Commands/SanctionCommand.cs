@@ -33,58 +33,107 @@ public class SanctionCommand : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        // берем данные мутов пользователя
+
         var userId = user.Id;
+        var guildUser = Context.Guild.GetUser(userId);
+        if (guildUser == null)
+            return;
+
+        // берем данные мутов пользователя
         var userSanctions = SanctionManager.GetSanctionsForUser(userId);
 
         SanctionType sanctionType;
         DateTime? muteExpiry = null;
 
-        var guildUser = Context.Guild.GetUser(userId);
-        if (guildUser == null)
-            return;
 
+        string sanctionDetails = "";
         switch (userSanctions.Count)
         {
             case 0:
                 sanctionType = SanctionType.Warn;
                 SanctionManager.AddSanction(userId, description, SanctionType.Warn);
+                sanctionDetails = "предупреждение";
                 break;
             case 1:
                 sanctionType = SanctionType.Mute;
                 muteExpiry = DateTime.UtcNow.AddDays(3);
                 SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                sanctionDetails = "Мут на 3 дня";
                 break;
             case 2:
                 sanctionType = SanctionType.Mute;
                 muteExpiry = DateTime.UtcNow.AddDays(5);
                 SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                sanctionDetails = "Мут на 5 дней";
                 break;
             case 3:
                 sanctionType = SanctionType.Mute;
                 muteExpiry = DateTime.UtcNow.AddDays(8);
                 SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                sanctionDetails = "Мут на 8 дней";
                 break;
             case 4:
                 sanctionType = SanctionType.Mute;
-                muteExpiry = DateTime.UtcNow.AddDays(11);
+                muteExpiry = DateTime.UtcNow.AddDays(13);
                 SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
                 await guildUser.AddRoleAsync(Context.Guild.GetRole(_config.PoopRoleID)); //на 5 раз выдаем роль грязнули
+                sanctionDetails = "Мут на 13 дней, а также особая роль! Следующее наказание приведёт к бану.";
                 break;
             case 5:
                 sanctionType = SanctionType.Mute;
-                muteExpiry = DateTime.UtcNow.AddDays(19);
+                muteExpiry = DateTime.UtcNow.AddDays(21);
                 SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                sanctionDetails = "Мут на 21 день. На рассмотрении об исключении из сообщества.";
                 break;
             default:
-                await RespondAsync($"У {user.Mention} Уже перебор по наказаниям. Почему он все еще не в бане?", ephemeral: true);
+                await RespondAsync($"У {user.Mention} Уже перебор по наказаниям. Почему он все еще не в бане? Сообщите начальнику караула", ephemeral: true);
                 return;
         }
-
-        await RespondAsync($"Выдано {userSanctions.Count + 1} наказание {user.Mention}: {sanctionType}. Причина: {description}", ephemeral: true);
 
         // Если мут - мутим
         if (sanctionType == SanctionType.Mute && muteExpiry.HasValue)
                 await guildUser.AddRoleAsync(Context.Guild.GetRole(_config.MuteRoleID));
+
+        Color embedColor;
+
+        switch (userSanctions.Count)
+        {
+            case 0:
+                embedColor = new Color(0, 0, 255); // Синий
+                break;
+            case 1:
+            case 2:
+                embedColor = new Color(255, 255, 0); // Жёлтый
+                break;
+            case 3:
+            case 4:
+            case 5:
+                int greenValue = (int)(255 - (userSanctions.Count - 2) * 51.5); //постепенное покраснение
+                embedColor = new Color(255, greenValue, 0);
+                break;
+            case 6:
+                embedColor = new Color(255, 0, 0); //красный
+                break;
+            default:
+                embedColor = new Color(0, 0, 255); //этого цвета не должно быть
+                break;
+        }
+        await RespondAsync($"Выдано {userSanctions.Count + 1} наказание {user.Mention}: {sanctionType}. Причина: {description}", ephemeral: true);
+
+        int sanctionNumber = await CounterManager.GetNextCounterAsync("sanctionCounter");
+        // Создание embed-сообщения для отправки в канал ReportChannelId
+        var embed = new EmbedBuilder()
+            .WithTitle($"Наказание № {sanctionNumber}")
+            .WithDescription($"{user.Mention} получил **{userSanctions.Count + 1}** наказание")
+            .AddField("Причина:", $"{description}")
+            .WithColor(embedColor)
+            .WithTimestamp(DateTime.UtcNow)
+            .AddField("Наказание:", $"{sanctionDetails}")
+            .AddField("Исполнивший:", SanctionerUser?.Mention)
+            .Build();
+
+        // Отправка сообщения в канал ReportChannelId
+        var reportChannel = Context.Guild.GetTextChannel(_config.SanctionChannelID);
+        await reportChannel.SendMessageAsync(embed: embed);
     }
 }
