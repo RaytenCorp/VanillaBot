@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace VanillaBot;
 public class UserAwarnsCommand : InteractionModuleBase<SocketInteractionContext>
 {
+
     [SlashCommand("userawarns", "Показать все аварны указанного пользователя и их даты сгорания.")]
     public async Task UserAwarnsAsync([Summary("пользователь", "Укажите пользователя для проверки варнов.")] IUser user)
     {
@@ -14,7 +15,7 @@ public class UserAwarnsCommand : InteractionModuleBase<SocketInteractionContext>
         var userId = targetUser.Id;
 
         // Получаем все аварны пользователя
-        var userWarns = await WarnManager.GetUserWarnsAsync(userId);
+        var userWarns = await AWarnManager.GetUserWarnsAsync(userId);
 
         if (userWarns == null || userWarns.Count == 0)
         {

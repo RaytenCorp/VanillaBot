@@ -20,10 +20,10 @@ public class AwarnCommand : InteractionModuleBase<SocketInteractionContext>
         [Summary("пользователь", "Пользователь, которому выдать предупреждение")] IUser user,
         [Summary("причина", "Причина предупреждения")] string reason = "Не указана")
     {
-        var guildUser = Context.User as SocketGuildUser;
+        var AwarnerUser = Context.User as SocketGuildUser;
         var targetUser = user as SocketGuildUser;
 
-        if (guildUser == null || targetUser == null)
+        if (AwarnerUser == null || targetUser == null)
         {
             await RespondAsync("Эта команда может быть выполнена только на сервере.", ephemeral: true);
             return;
@@ -31,7 +31,7 @@ public class AwarnCommand : InteractionModuleBase<SocketInteractionContext>
 
         // Проверка на права
         bool canWarn = false;
-        foreach (var roleId in guildUser.Roles.Select(r => r.Id))
+        foreach (var roleId in AwarnerUser.Roles.Select(r => r.Id))
         {
             if (_config.RolePermissions.TryGetValue(roleId, out var allowedRoles) &&
                 allowedRoles.Any(allowedRole => targetUser.Roles.Any(r => r.Id == allowedRole)))
@@ -55,11 +55,11 @@ public class AwarnCommand : InteractionModuleBase<SocketInteractionContext>
         }
 
         // Получаем список аварнов пользователя
-        var activeWarnCount = await WarnManager.GetActiveWarnCountAsync(targetUser.Id);
+        var activeWarnCount = await AWarnManager.GetActiveWarnCountAsync(targetUser.Id);
         // Получаем номер аварна
         int warningNumber = await CounterManager.GetNextCounterAsync("warningCounter");
         // Добавляем новый аварн
-        await WarnManager.AddWarnAsync(targetUser.Id);
+        await AWarnManager.AddWarnAsync(targetUser.Id);
 
         // Получаем следующий номер предупреждения
         var warnNumber = activeWarnCount + 1;  // Это новый аварн для пользователя

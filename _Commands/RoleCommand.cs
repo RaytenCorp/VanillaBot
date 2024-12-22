@@ -42,16 +42,14 @@ public class RoleCommand : InteractionModuleBase<SocketInteractionContext>
 
     private bool CanManageRole(IGuildUser? user, IRole role)
     {
+        if (user == null)
+            return false;
+
         // Проверяем роли вызывающего пользователя
         foreach (var callerRoleId in user.RoleIds)
         {
-            if (_config.RoleManagementPermissions.TryGetValue(callerRoleId, out var manageableRoles))
-            {
-                if (manageableRoles.Contains(role.Id))
-                {
-                    return true;
-                }
-            }
+            if (_config.RoleManagementPermissions.TryGetValue(callerRoleId, out var manageableRoles) && manageableRoles.Contains(role.Id))
+                return true;
         }
 
         return false;

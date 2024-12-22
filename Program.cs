@@ -9,11 +9,13 @@ using System.Reflection;
 namespace VanillaBot;
 class Program
 {
+    private static UserJoinHandler _userJoinHandler = null!;
+
     /*Это основной клиент для взаимодействия с Discord API. Он используется для обработки событий, отправки сообщений и других операций с сервером Discord.*/
-    private static DiscordSocketClient _client = new DiscordSocketClient();
+    private static DiscordSocketClient _client;
 
     /*Это сервис, который обрабатывает команды типа Slash (slash-commands) и Context (команды контекстного меню) для бота.*/
-    private static InteractionService _commands = new InteractionService(_client.Rest);
+    private static InteractionService _commands;
 
     /* 
     Это контейнер для управления зависимостями (Dependency Injection). 
@@ -29,12 +31,14 @@ class Program
         // Загружаем конфигурацию
         _config = await ConfigLoader.LoadConfigAsync();
 
-        // Проверка, что конфигурация загружена и токен не пустой
-        if (_config?.Token == null)
+        // Настройка клиента с необходимыми Gateway Intents
+        var clientConfig = new DiscordSocketConfig
         {
-            Console.WriteLine("Токен не найден в конфигурации. Пожалуйста, укажите токен.");
-            return;
-        }
+            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages
+        };
+
+        _client = new DiscordSocketClient(clientConfig);
+        _commands = new InteractionService(_client.Rest);
 
         // Настройка DI (Dependency Injection)
         _services = new ServiceCollection()
@@ -68,18 +72,26 @@ class Program
         return Task.CompletedTask;
     }
 
-    // Метод, который вызывается, когда клиент готов
     private static async Task ReadyAsync()
     {
-        // Регистрация команд через InteractionService
-        await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), _services); // Используем _commands для регистрации команд
-        
-        if (_config?.GuildId != null)
-            await _commands.RegisterCommandsToGuildAsync(_config.GuildId);
-        else
-            Console.WriteLine("GuildId не указан в конфигурации. Команды не зарегистрированы.");
+        if (_config == null)
+        {
+            Console.WriteLine("Конфигурация не инициализирована.");
+            return;
+        }
 
+        await _commands.AddModulesAsync(Assembly.GetExecutingAssembly(), _services);
+
+        await _commands.RegisterCommandsToGuildAsync(_config.GuildId);
         Console.WriteLine("Команды зарегистрированы.");
+        
+        // Инициализация менеджеров
+        LocalEventManager.Initialize(_client, _config);
+        SanctionManager.Initialize();
+
+        // Инициализация обработчика входа пользователя
+        _userJoinHandler = new UserJoinHandler(_client, _config);
+        _userJoinHandler.Initialize();
     }
 
     //обработчик для комманд 

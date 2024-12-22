@@ -22,6 +22,7 @@ public static class ConfigLoader
                 Token = "YOUR_TOKEN_HERE",
                 GuildId = 123456789012345678,
                 AWarnsChannelId = 123456789012345678,
+                SanctionChannelID = 123456789012345678,
                 ReportChannelId = 123456789012345678,
                 RoleManagementPermissions = new Dictionary<ulong, List<ulong>>
                 {
@@ -30,7 +31,10 @@ public static class ConfigLoader
                 RolePermissions = new Dictionary<ulong, List<ulong>>
                 {
                     { 111111111111111111, new List<ulong> { 222222222222222222, 333333333333333333 } }
-                }
+                },
+                RoleSanctionPermissions = new List<ulong> { 111111111111111111, 222222222222222222 },
+                MuteRoleID = 123456789012345678,
+                PoopRoleID = 123456789012345678
             };
             await SaveConfigAsync(defaultConfig); 
             return defaultConfig;
@@ -55,7 +59,11 @@ public class Config
     public required string Token { get; set; }
     public required ulong GuildId { get; set; }
     public required ulong AWarnsChannelId { get; set; }
+    public required ulong SanctionChannelID { get; set; }
     public required ulong ReportChannelId { get; set; } 
     public Dictionary<ulong, List<ulong>> RolePermissions { get; set; } = new();
     public Dictionary<ulong, List<ulong>> RoleManagementPermissions { get; set; } = new();
+    public List<ulong> RoleSanctionPermissions { get; set; } = new();
+    public required ulong PoopRoleID { get; set; }
+    public required ulong MuteRoleID { get; set; }
 }

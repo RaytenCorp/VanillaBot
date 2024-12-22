@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace VanillaBot
 {
-    public static class WarnManager
+    public static class AWarnManager
     {
         private static readonly string AwarnsFilePath = Path.Combine("data", "awarns.json");
 
