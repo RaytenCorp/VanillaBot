@@ -70,9 +70,6 @@ public class MessageHandler
                 ThreadType.PublicThread, 
                 ThreadArchiveDuration.OneDay, 
                 userMessage);
-
-            // Отправляем сообщение с кнопками в ветку
-            await thread.SendMessageAsync("Выберите действие:", components: buttons);
         }
     }
 }
