@@ -10,6 +10,7 @@ namespace VanillaBot;
 class Program
 {
     private static UserJoinHandler _userJoinHandler = null!;
+    private static MessageHandler _messageHandler = null!;
 
     /*Это основной клиент для взаимодействия с Discord API. Он используется для обработки событий, отправки сообщений и других операций с сервером Discord.*/
     private static DiscordSocketClient _client;
@@ -89,9 +90,13 @@ class Program
         LocalEventManager.Initialize(_client, _config);
         SanctionManager.Initialize();
 
-        // Инициализация обработчика входа пользователя
+        // ивент захода пользователя
         _userJoinHandler = new UserJoinHandler(_client, _config);
         _userJoinHandler.Initialize();
+        // ивент сообщения
+        _messageHandler = new MessageHandler(_client, _config);
+        _messageHandler.Initialize();
+        
     }
 
     //обработчик для комманд 

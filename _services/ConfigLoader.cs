@@ -22,8 +22,23 @@ public static class ConfigLoader
                 Token = "YOUR_TOKEN_HERE",
                 GuildId = 123456789012345678,
                 AWarnsChannelId = 123456789012345678,
+                HelpChannelId = 123456789012345678,
                 SanctionChannelID = 123456789012345678,
                 ReportChannelId = 123456789012345678,
+                PhotocardsChannelId = 1236387986078302280,
+                VideoChannelId = 123456789012345678,
+                AudioChannelId = 123456789012345678,
+                MemesChannelId = 123456789012345678,
+                DrawingChannelId = 123456789012345678,
+                QuentaChannelId = 123456789012345678,
+                ReviewsChannelId = 123456789012345678,
+                HeadHuntChannelId = 123456789012345678,
+                TimeChannelId = 123456789012345678,
+                SS14ReportsChannelId = 123456789012345678,
+                AppealChannelId = 123456789012345678,
+                AdminReportsChannelId = 123456789012345678,
+                interrogationChannelId = 123456789012345678,
+                arrivalChannelId = 123456789012345678,
                 RoleManagementPermissions = new Dictionary<ulong, List<ulong>>
                 {
                     { 111111111111111111, new List<ulong> { 222222222222222222, 333333333333333333 } }
@@ -61,6 +76,21 @@ public class Config
     public required ulong AWarnsChannelId { get; set; }
     public required ulong SanctionChannelID { get; set; }
     public required ulong ReportChannelId { get; set; } 
+    public required ulong PhotocardsChannelId { get; set; } 
+    public required ulong HelpChannelId { get; set; } 
+    public required ulong VideoChannelId { get; set; } 
+    public required ulong AudioChannelId { get; set; } 
+    public required ulong MemesChannelId { get; set; } 
+    public required ulong DrawingChannelId { get; set; } 
+    public required ulong QuentaChannelId { get; set; } 
+    public required ulong ReviewsChannelId { get; set; } 
+    public required ulong HeadHuntChannelId { get; set; } 
+    public required ulong TimeChannelId { get; set; } 
+    public required ulong SS14ReportsChannelId { get; set; } 
+    public required ulong AppealChannelId { get; set; } 
+    public required ulong AdminReportsChannelId { get; set; } 
+    public required ulong interrogationChannelId { get; set; } 
+    public required ulong arrivalChannelId { get; set; } 
     public Dictionary<ulong, List<ulong>> RolePermissions { get; set; } = new();
     public Dictionary<ulong, List<ulong>> RoleManagementPermissions { get; set; } = new();
     public List<ulong> RoleSanctionPermissions { get; set; } = new();
