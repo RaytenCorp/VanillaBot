@@ -20,6 +20,7 @@ public static class ConfigLoader
             var defaultConfig = new Config
             {
                 Token = "YOUR_TOKEN_HERE",
+                BDpath = "Path to auth.json",
                 GuildId = 123456789012345678,
                 AWarnsChannelId = 123456789012345678,
                 HelpChannelId = 123456789012345678,
@@ -49,7 +50,9 @@ public static class ConfigLoader
                 },
                 RoleSanctionPermissions = new List<ulong> { 111111111111111111, 222222222222222222 },
                 MuteRoleID = 123456789012345678,
-                PoopRoleID = 123456789012345678
+                PoopRoleID = 123456789012345678,
+                AuthRoleID = 123456789012345678,
+                NotAuthRoleID = 123456789012345678
             };
             await SaveConfigAsync(defaultConfig); 
             return defaultConfig;
@@ -72,6 +75,7 @@ public static class ConfigLoader
 public class Config
 {
     public required string Token { get; set; }
+    public required string BDpath { get; set; }
     public required ulong GuildId { get; set; }
     public required ulong AWarnsChannelId { get; set; }
     public required ulong SanctionChannelID { get; set; }
@@ -96,4 +100,6 @@ public class Config
     public List<ulong> RoleSanctionPermissions { get; set; } = new();
     public required ulong PoopRoleID { get; set; }
     public required ulong MuteRoleID { get; set; }
+    public required ulong AuthRoleID { get; set; }
+    public required ulong NotAuthRoleID { get; set; }
 }

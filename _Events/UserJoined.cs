@@ -2,6 +2,8 @@ using Discord.WebSocket;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
+using Newtonsoft.Json.Linq;
 
 namespace VanillaBot;
 
@@ -18,11 +20,40 @@ public class UserJoinHandler
 
     public void Initialize()
     {
-        _client.UserJoined += OnUserJoinedAsync;
+        _client.UserJoined += CheckMute;
+        _client.UserJoined += CheckAuth;
         Console.WriteLine("UserJoinHandler инициализирован.");
     }
 
-    private async Task OnUserJoinedAsync(SocketGuildUser user)
+    private async Task CheckAuth(SocketGuildUser user)
+    {
+        try
+        {
+            // Проверяем, существует ли файл базы данных
+            if (!File.Exists(_config.BDpath))
+            {
+                Console.WriteLine($"База данных не найдена по указанному пути: {_config.BDpath}");
+                return;
+            }
+
+            // Считываем JSON и парсим его
+            var jsonData = File.ReadAllText(_config.BDpath);
+            var db = JObject.Parse(jsonData);
+
+            // Проверяем наличие пользователя в базе по ключу
+            if (db.ContainsKey(user.Id.ToString()))
+                await user.AddRoleAsync(user.Guild.GetRole(_config.AuthRoleID));// выдаем роль авторизованного
+            else
+                await user.AddRoleAsync(user.Guild.GetRole(_config.NotAuthRoleID));//иначе выдаем роль не авторизованного
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при проверке авторизации: {ex.Message}");
+        }
+    }
+
+
+    private async Task CheckMute(SocketGuildUser user)
     {
         try
         {
