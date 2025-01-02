@@ -11,12 +11,15 @@ class Program
 {
     private static UserJoinHandler _userJoinHandler = null!;
     private static MessageHandler _messageHandler = null!;
+    private static InteractionHandler _interactionHandler = null!;
 
-    /*Это основной клиент для взаимодействия с Discord API. Он используется для обработки событий, отправки сообщений и других операций с сервером Discord.*/
-    private static DiscordSocketClient _client;
+    private static DiscordSocketConfig clientConfig = new DiscordSocketConfig
+        {
+            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages
+        };
 
-    /*Это сервис, который обрабатывает команды типа Slash (slash-commands) и Context (команды контекстного меню) для бота.*/
-    private static InteractionService _commands;
+    private static DiscordSocketClient _client = new DiscordSocketClient(clientConfig);
+    private static InteractionService _commands = new InteractionService(_client.Rest);
 
     /* 
     Это контейнер для управления зависимостями (Dependency Injection). 
@@ -31,15 +34,6 @@ class Program
     {
         // Загружаем конфигурацию
         _config = await ConfigLoader.LoadConfigAsync();
-
-        // Настройка клиента с необходимыми Gateway Intents
-        var clientConfig = new DiscordSocketConfig
-        {
-            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages
-        };
-
-        _client = new DiscordSocketClient(clientConfig);
-        _commands = new InteractionService(_client.Rest);
 
         // Настройка DI (Dependency Injection)
         _services = new ServiceCollection()
@@ -96,9 +90,46 @@ class Program
         // ивент сообщения
         _messageHandler = new MessageHandler(_client, _config);
         _messageHandler.Initialize();
-        
+        // ивент нажатия на кнопку
+        _interactionHandler = new InteractionHandler(_client, _config);
+        _interactionHandler.Initialize();  // Инициализация обработчика
+
+        // кнопки кнопочки
+        await createRoleSelectionBtns();
     }
 
+    private static async Task createRoleSelectionBtns()
+    {
+        if (_config?.roleselectChannelId == null)
+        {
+            Console.WriteLine("ID канала для выбора ролей не задан.");
+            return;
+        }
+
+        var channel = _client.GetChannel(_config.roleselectChannelId) as IMessageChannel;
+
+        // Проверяем, что канал существует
+        if (channel is null)
+        {
+            Console.WriteLine("Канал не найден.");
+            return;
+        }
+
+        var buttons = new List<(string ButtonId, string ButtonLabel)>
+        {
+            ("get_role_NewsRoleID", "Новости"),
+            ("get_role_EventsRoleID", "Ивенты"),
+            ("get_role_HighPopRoleID", "Хайпоп")
+        };
+
+        // Создаём и отправляем эмбеды с кнопками
+        await _interactionHandler.CreateAndSendButtonsAsync(
+            channel,
+            buttons,
+            "Анонсы",
+            "Здесь вы можете подписаться (или отписаться) на различные уведомления!\n\n p.s. я пока что сам не знаю что делает роль Хайпоп, потом разберёмся"
+        );
+    }
     //обработчик для комманд 
     private static async Task HandleInteractionAsync(SocketInteraction interaction)
     {

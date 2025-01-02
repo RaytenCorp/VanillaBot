@@ -40,6 +40,7 @@ public static class ConfigLoader
                 AdminReportsChannelId = 123456789012345678,
                 interrogationChannelId = 123456789012345678,
                 arrivalChannelId = 123456789012345678,
+                roleselectChannelId = 123456789012345678,
                 RoleManagementPermissions = new Dictionary<ulong, List<ulong>>
                 {
                     { 111111111111111111, new List<ulong> { 222222222222222222, 333333333333333333 } }
@@ -52,7 +53,11 @@ public static class ConfigLoader
                 MuteRoleID = 123456789012345678,
                 PoopRoleID = 123456789012345678,
                 AuthRoleID = 123456789012345678,
-                NotAuthRoleID = 123456789012345678
+                NotAuthRoleID = 123456789012345678,
+                NewsRoleID = 123456789012345678,
+                EventsRoleID = 123456789012345678,
+                HighPopRoleID = 123456789012345678,
+                HOSTRoleID = 123456789012345678
             };
             await SaveConfigAsync(defaultConfig); 
             return defaultConfig;
@@ -95,6 +100,7 @@ public class Config
     public required ulong AdminReportsChannelId { get; set; } 
     public required ulong interrogationChannelId { get; set; } 
     public required ulong arrivalChannelId { get; set; } 
+    public required ulong roleselectChannelId { get; set; } 
     public Dictionary<ulong, List<ulong>> RolePermissions { get; set; } = new();
     public Dictionary<ulong, List<ulong>> RoleManagementPermissions { get; set; } = new();
     public List<ulong> RoleSanctionPermissions { get; set; } = new();
@@ -102,4 +108,10 @@ public class Config
     public required ulong MuteRoleID { get; set; }
     public required ulong AuthRoleID { get; set; }
     public required ulong NotAuthRoleID { get; set; }
+    //анонсы
+    public required ulong NewsRoleID { get; set; }
+    public required ulong EventsRoleID { get; set; }
+    public required ulong HighPopRoleID { get; set; }
+    //Роли
+    public required ulong HOSTRoleID { get; set; }
 }
