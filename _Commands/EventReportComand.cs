@@ -88,11 +88,12 @@ namespace VanillaBot
             if (!string.IsNullOrWhiteSpace(eventproblems))
                 embed.AddField("Проблемы", $"```{eventproblems}```", false);
 
+            embed.AddField("Проводящий", $"{Context.User.Mention}, {eventReporterRole}", false);
+
             // Если указан помощник, добавляем поле
             if (helper != null)
                 embed.AddField("Помощник", helper.Mention, true);
 
-            embed.AddField("Проводящий", $"{Context.User.Mention}, {eventReporterRole}", false);
             // Если есть фото, добавляем его как изображение Embed
             if (photo != null)
                 embed.WithImageUrl(photo.Url);
