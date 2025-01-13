@@ -18,6 +18,8 @@ namespace VanillaBot
         public async Task SendEventReportAsync(
             [Summary("Название", "Как называется ваше творение?")]
             string eventname,
+            [Summary("Раунд", "укажите раунд в котором был проведён ивент")]
+            int eventroundID,
 
             [Summary("Тип", "Тип проведённого ивента")]
             [Choice("Микро", "микро")]
@@ -76,7 +78,8 @@ namespace VanillaBot
             var embed = new EmbedBuilder()
                 .WithTitle($"{eventname}")
                 .WithColor(new Color(0x9C59B6)) // Цвет: #9C59B6
-                .AddField("Тип", eventtype, false)
+                .AddField("Раунд",$"```{eventroundID}```", true)
+                .AddField("Тип",$"```{eventtype}```", true)
                 .AddField("Описание", $"```{eventdesc}```", false)
                 .AddField("Проводящий", $"{Context.User.Mention}, {eventReporterRole}", false)
                 .WithFooter($"{Context.Guild.Name}", Context.Guild.IconUrl)
