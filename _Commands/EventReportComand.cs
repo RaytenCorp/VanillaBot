@@ -11,6 +11,7 @@ namespace VanillaBot
         public async Task SendEventReportAsync()
         {
             Console.WriteLine("команда поступила");
+            await RespondAsync($"успех");
         }
 
     }
