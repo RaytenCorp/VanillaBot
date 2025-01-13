@@ -54,6 +54,7 @@ public class MessageHandler
             message.Channel.Id != _config.TimeChannelId &&
             message.Channel.Id != _config.SS14ReportsChannelId &&
             message.Channel.Id != _config.AppealChannelId &&
+            message.Channel.Id != _config.EventReportChannelId &&
             message.Channel.Id != _config.AdminReportsChannelId)
             return;
 

@@ -73,7 +73,6 @@ namespace VanillaBot
 
             // Получение канала для отчётов
             var EventReportChannel = Context.Guild.GetTextChannel(_config.EventReportChannelId);
-            int EventReportReportNumber = await CounterManager.GetNextCounterAsync("EventReportCounter");
 
             // Создание Embed
             var embed = new EmbedBuilder()
@@ -82,7 +81,6 @@ namespace VanillaBot
                 .AddField("Раунд",$"```{eventroundID}```", true)
                 .AddField("Тип",$"```{eventtype}```", true)
                 .AddField("Описание", $"```{eventdesc}```", false)
-                .AddField("Проводящий", $"{Context.User.Mention}, {eventReporterRole}", false)
                 .WithFooter($"{Context.Guild.Name}", Context.Guild.IconUrl)
                 .WithCurrentTimestamp();
 
@@ -94,6 +92,7 @@ namespace VanillaBot
             if (helper != null)
                 embed.AddField("Помощник", helper.Mention, true);
 
+            embed.AddField("Проводящий", $"{Context.User.Mention}, {eventReporterRole}", false);
             // Если есть фото, добавляем его как изображение Embed
             if (photo != null)
                 embed.WithImageUrl(photo.Url);
