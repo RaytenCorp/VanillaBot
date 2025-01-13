@@ -90,6 +90,7 @@ public class MessageHandler
         // Проверяем, что сообщение является IUserMessage (сообщение от бота)
         if (message is IUserMessage userMessage)
         {
+            // Находим первый embed в сообщении
             var embed = userMessage.Embeds.FirstOrDefault();
             if (embed != null)
             {
@@ -98,17 +99,18 @@ public class MessageHandler
 
                 var textChannel = message.Channel as ITextChannel;
 
-                // Создаём ветку, привязанную к сообщению
+                // Создаём ветку, привязанную к сообщению с эмбедами
                 var thread = await textChannel.CreateThreadAsync(
                     threadName,
                     ThreadType.PublicThread,
                     ThreadArchiveDuration.OneDay,
-                    userMessage
+                    userMessage // Привязываем ветку к сообщению
                 );
 
                 Console.WriteLine($"Создана ветка с названием: {threadName}");
             }
         }
     }
+
 
 }
