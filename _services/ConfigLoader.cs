@@ -41,6 +41,7 @@ public static class ConfigLoader
                 interrogationChannelId = 123456789012345678,
                 arrivalChannelId = 123456789012345678,
                 roleselectChannelId = 123456789012345678,
+                EventReportChannelId = 123456789012345678,
                 RoleManagementPermissions = new Dictionary<ulong, List<ulong>>
                 {
                     { 111111111111111111, new List<ulong> { 222222222222222222, 333333333333333333 } }
@@ -101,6 +102,7 @@ public class Config
     public required ulong interrogationChannelId { get; set; } 
     public required ulong arrivalChannelId { get; set; } 
     public required ulong roleselectChannelId { get; set; } 
+    public required ulong EventReportChannelId { get; set; } 
     public Dictionary<ulong, List<ulong>> RolePermissions { get; set; } = new();
     public Dictionary<ulong, List<ulong>> RoleManagementPermissions { get; set; } = new();
     public List<ulong> RoleSanctionPermissions { get; set; } = new();

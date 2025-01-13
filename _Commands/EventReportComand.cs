@@ -13,6 +13,5 @@ namespace VanillaBot
             Console.WriteLine("команда поступила");
             await RespondAsync($"успех");
         }
-
     }
 }
