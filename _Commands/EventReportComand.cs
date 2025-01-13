@@ -1,4 +1,4 @@
-using Discord;
+public class EventReportCommand : InteractionModuleBase<SocketInteractionContext>
 using Discord.Interactions;
 using System.Threading.Tasks;
 
@@ -35,27 +35,35 @@ namespace VanillaBot
             IAttachment? photo = null
         )
         {
-            // Получение канала для жалоб из конфигурации и номера счётчика
+            // Получение канала для отчётов
             var EventReportChannel = Context.Guild.GetTextChannel(_config.EventReportChannelId);
             int EventReportReportNumber = await CounterManager.GetNextCounterAsync("EventReportCounter");
 
             // Создание Embed
             var embed = new EmbedBuilder()
                 .WithTitle($"Отчёт о событии #{EventReportReportNumber}")
-                .WithColor(Color.Blue)
-                .AddField("Тип ивента", eventtype, true)
-                .AddField("Описание", eventdesc, false)
-                .WithFooter($"Автор отчёта: {Context.User.Username} • {DateTime.UtcNow:dd.MM.yyyy HH:mm} UTC", Context.User.GetAvatarUrl())
-                .WithThumbnailUrl(photo?.Url) // Если фото есть, добавляем в миниатюру
+                .WithColor(new Color(0x9C59B6)) // Цвет: #9C59B6
+                .AddField("Тип", eventtype, false)
+                .AddField("Описание", $"```{eventdesc}```", false)
+                .WithFooter(
+                    $"{Context.Guild.Name}",
+                    Context.Guild.IconUrl
+                )
+                .WithThumbnailUrl(Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl())
                 .WithCurrentTimestamp();
 
             // Если указаны проблемы, добавляем поле
             if (!string.IsNullOrWhiteSpace(eventproblems))
-                embed.AddField("Проблемы", eventproblems, false);
+                embed.AddField("Проблемы", $"```{eventproblems}```", false);
+            
+            embed.AddField("Проводящий", $"{Context.User.Mention} (Главный гейм-мастер)", false);
 
-            // Если указан помощник, добавляем поле
             if (helper != null)
                 embed.AddField("Помощник", helper.Mention, true);
+
+            // Если есть фото, добавляем его как изображение Embed
+            if (photo != null)
+                embed.WithImageUrl(photo.Url);
 
             // Отправка Embed в указанный канал
             await EventReportChannel.SendMessageAsync(embed: embed.Build());
