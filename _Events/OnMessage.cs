@@ -39,7 +39,11 @@ public class MessageHandler
     private async Task CreateBranch(SocketMessage message)
     {
         // Проверяем, что сообщение не от бота
-        if (message.Author.IsBot) return;
+        if (message.Author.IsBot)
+        {
+            await CreateBranchForEventReportChannel(message);
+            return;
+        }
 
         // Проверяем, что сообщение не находится ни в одном из указанных каналов
         if (message.Channel.Id != _config.PhotocardsChannelId &&
@@ -73,4 +77,38 @@ public class MessageHandler
                 userMessage);
         }
     }
+    private async Task CreateBranchForEventReportChannel(SocketMessage message)
+    {
+        // Проверяем, что сообщение находится в канале для отчетов
+        if (message.Channel.Id != _config.EventReportChannelId)
+            return;
+
+        // Проверяем, что сообщение от бота
+        if (!message.Author.IsBot)
+            return;
+
+        // Проверяем, что сообщение является IUserMessage (сообщение от бота)
+        if (message is IUserMessage userMessage)
+        {
+            var embed = userMessage.Embeds.FirstOrDefault();
+            if (embed != null)
+            {
+                // Название ветки будет взято из embed.title
+                string threadName = embed.Title ?? "Отчёт о событии";
+
+                var textChannel = message.Channel as ITextChannel;
+
+                // Создаём ветку, привязанную к сообщению
+                var thread = await textChannel.CreateThreadAsync(
+                    threadName,
+                    ThreadType.PublicThread,
+                    ThreadArchiveDuration.OneDay,
+                    userMessage
+                );
+
+                Console.WriteLine($"Создана ветка с названием: {threadName}");
+            }
+        }
+    }
+
 }
