@@ -48,7 +48,6 @@ public class EventReportCommand : InteractionModuleBase<SocketInteractionContext
                 $"{Context.Guild.Name}",
                 Context.Guild.IconUrl
             )
-            .WithThumbnailUrl(Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl())
             .WithCurrentTimestamp();
 
         // Если указаны проблемы, добавляем поле
