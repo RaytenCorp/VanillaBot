@@ -50,6 +50,7 @@ namespace VanillaBot
                 _config.GMRoleID,
                 _config.MGMRoleID,
                 _config.SMRoleID,
+                _config.WardenRoleID,
                 _config.MRoleID
             };
 
