@@ -1,72 +1,104 @@
 using Discord;
 using Discord.Interactions;
+using System.Linq;
 using System.Threading.Tasks;
-namespace VanillaBot;
 
-public class EventReportCommand : InteractionModuleBase<SocketInteractionContext>
+namespace VanillaBot
 {
-    private readonly Config _config;
-
-    public EventReportCommand(Config config)
+    public class EventReportCommand : InteractionModuleBase<SocketInteractionContext>
     {
-        _config = config;
-    }
+        private readonly Config _config;
 
-    [SlashCommand("eventreport", "Составить отчёт о проведённом ивенте")]
-    public async Task SendEventReportAsync(
-        [Summary("Тип", "Тип проведённого ивента")]
-        [Choice("Микро", "микро")]
-        [Choice("Мини", "мини")]
-        [Choice("Средний", "средний")]
-        [Choice("Глобальный", "глобальный")]
-        string eventtype,
+        public EventReportCommand(Config config)
+        {
+            _config = config;
+        }
 
-        [Summary("Описание", "Подробное описание ивента")]
-        string eventdesc,
+        [SlashCommand("eventreport", "Составить отчёт о проведённом ивенте")]
+        public async Task SendEventReportAsync(
+            [Summary("Название", "Как называется ваше творение?")]
+            string eventname,
 
-        [Summary("Проблемы", "Опишите проблемы, с которыми вы столкнулись (если они были)")]
-        string? eventproblems = null,
+            [Summary("Тип", "Тип проведённого ивента")]
+            [Choice("Микро", "микро")]
+            [Choice("Мини", "мини")]
+            [Choice("Средний", "средний")]
+            [Choice("Глобальный", "глобальный")]
+            string eventtype,
 
-        [Summary("Помощник", "Выберите одного помощника (если был)")]
-        IUser? helper = null,
+            [Summary("Описание", "Подробное описание ивента")]
+            string eventdesc,
 
-        [Summary("Фотокарточка", "Фоточка!")]
-        IAttachment? photo = null
-    )
-    {
-        // Получение канала для отчётов
-        var EventReportChannel = Context.Guild.GetTextChannel(_config.EventReportChannelId);
-        int EventReportReportNumber = await CounterManager.GetNextCounterAsync("EventReportCounter");
+            [Summary("Проблемы", "Опишите проблемы, с которыми вы столкнулись (если они были)")]
+            string? eventproblems = null,
 
-        // Создание Embed
-        var embed = new EmbedBuilder()
-            .WithTitle($"Отчёт о событии #{EventReportReportNumber}")
-            .WithColor(new Color(0x9C59B6)) // Цвет: #9C59B6
-            .AddField("Тип", eventtype, false)
-            .AddField("Описание", $"```{eventdesc}```", false)
-            .WithFooter(
-                $"{Context.Guild.Name}",
-                Context.Guild.IconUrl
-            )
-            .WithCurrentTimestamp();
+            [Summary("Помощник", "Выберите одного помощника (если был)")]
+            IUser? helper = null,
 
-        // Если указаны проблемы, добавляем поле
-        if (!string.IsNullOrWhiteSpace(eventproblems))
-            embed.AddField("Проблемы", $"```{eventproblems}```", false);
-        
-        embed.AddField("Проводящий", $"{Context.User.Mention} (Главный гейм-мастер)", false);
+            [Summary("Фотокарточка", "Фоточка!")]
+            IAttachment? photo = null
+        )
+        {
+            // Список разрешённых ролей
+            var allowedRoles = new ulong[]
+            {
+                _config.HOSTRoleID,
+                _config.AdminRoleID,
+                _config.GGMRoleID,
+                _config.GMRoleID,
+                _config.MGMRoleID,
+                _config.SMRoleID,
+                _config.MRoleID
+            };
 
-        if (helper != null)
-            embed.AddField("Помощник", helper.Mention, true);
+            // Проверяем, есть ли у пользователя одна из разрешённых ролей
+            var userRoles = (Context.User as IGuildUser)?.RoleIds;
+            if (userRoles == null || !userRoles.Any(role => allowedRoles.Contains(role)))
+            {
+                await RespondAsync("У вас недостаточно прав для выполнения этой команды.", ephemeral: true);
+                return;
+            }
 
-        // Если есть фото, добавляем его как изображение Embed
-        if (photo != null)
-            embed.WithImageUrl(photo.Url);
+            // Определяем самую высокую роль из разрешённых
+            var guildRoles = Context.Guild.Roles;
+            var highestRole = guildRoles
+                .Where(role => userRoles.Contains(role.Id) && allowedRoles.Contains(role.Id))
+                .OrderByDescending(role => role.Position)
+                .FirstOrDefault();
 
-        // Отправка Embed в указанный канал
-        await EventReportChannel.SendMessageAsync(embed: embed.Build());
+            string eventReporterRole = highestRole?.Name ?? "Неизвестная роль";
 
-        // Уведомление автора команды
-        await RespondAsync("Отчёт принят.", ephemeral: true);
+            // Получение канала для отчётов
+            var EventReportChannel = Context.Guild.GetTextChannel(_config.EventReportChannelId);
+            int EventReportReportNumber = await CounterManager.GetNextCounterAsync("EventReportCounter");
+
+            // Создание Embed
+            var embed = new EmbedBuilder()
+                .WithTitle($"{eventname}")
+                .WithColor(new Color(0x9C59B6)) // Цвет: #9C59B6
+                .AddField("Тип", eventtype, false)
+                .AddField("Описание", $"```{eventdesc}```", false)
+                .AddField("Проводящий", $"{Context.User.Mention}, {eventReporterRole}", false)
+                .WithFooter($"{Context.Guild.Name}", Context.Guild.IconUrl)
+                .WithCurrentTimestamp();
+
+            // Если указаны проблемы, добавляем поле
+            if (!string.IsNullOrWhiteSpace(eventproblems))
+                embed.AddField("Проблемы", $"```{eventproblems}```", false);
+
+            // Если указан помощник, добавляем поле
+            if (helper != null)
+                embed.AddField("Помощник", helper.Mention, true);
+
+            // Если есть фото, добавляем его как изображение Embed
+            if (photo != null)
+                embed.WithImageUrl(photo.Url);
+
+            // Отправка Embed в указанный канал
+            await EventReportChannel.SendMessageAsync(embed: embed.Build());
+
+            // Уведомление автора команды
+            await RespondAsync("Отчёт принят.", ephemeral: true);
+        }
     }
 }

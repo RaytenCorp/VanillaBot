@@ -58,7 +58,13 @@ public static class ConfigLoader
                 NewsRoleID = 123456789012345678,
                 EventsRoleID = 123456789012345678,
                 HighPopRoleID = 123456789012345678,
-                HOSTRoleID = 123456789012345678
+                HOSTRoleID = 123456789012345678,
+                AdminRoleID = 123456789012345678,
+                GGMRoleID = 123456789012345678,
+                GMRoleID = 123456789012345678,
+                MGMRoleID = 123456789012345678,
+                SMRoleID = 123456789012345678,
+                MRoleID = 123456789012345678
             };
             await SaveConfigAsync(defaultConfig); 
             return defaultConfig;
@@ -116,4 +122,10 @@ public class Config
     public required ulong HighPopRoleID { get; set; }
     //Роли
     public required ulong HOSTRoleID { get; set; }
+    public required ulong AdminRoleID { get; set; }
+    public required ulong GGMRoleID { get; set; }
+    public required ulong GMRoleID { get; set; }
+    public required ulong MGMRoleID { get; set; }
+    public required ulong SMRoleID { get; set; }
+    public required ulong MRoleID { get; set; }
 }
