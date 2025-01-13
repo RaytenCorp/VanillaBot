@@ -41,6 +41,7 @@ public static class ConfigLoader
                 interrogationChannelId = 123456789012345678,
                 arrivalChannelId = 123456789012345678,
                 roleselectChannelId = 123456789012345678,
+                EventReportChannelId = 123456789012345678,
                 RoleManagementPermissions = new Dictionary<ulong, List<ulong>>
                 {
                     { 111111111111111111, new List<ulong> { 222222222222222222, 333333333333333333 } }
@@ -57,7 +58,14 @@ public static class ConfigLoader
                 NewsRoleID = 123456789012345678,
                 EventsRoleID = 123456789012345678,
                 HighPopRoleID = 123456789012345678,
-                HOSTRoleID = 123456789012345678
+                HOSTRoleID = 123456789012345678,
+                AdminRoleID = 123456789012345678,
+                GGMRoleID = 123456789012345678,
+                GMRoleID = 123456789012345678,
+                MGMRoleID = 123456789012345678,
+                SMRoleID = 123456789012345678,
+                WardenRoleID = 123456789012345678,
+                MRoleID = 123456789012345678
             };
             await SaveConfigAsync(defaultConfig); 
             return defaultConfig;
@@ -101,6 +109,7 @@ public class Config
     public required ulong interrogationChannelId { get; set; } 
     public required ulong arrivalChannelId { get; set; } 
     public required ulong roleselectChannelId { get; set; } 
+    public required ulong EventReportChannelId { get; set; } 
     public Dictionary<ulong, List<ulong>> RolePermissions { get; set; } = new();
     public Dictionary<ulong, List<ulong>> RoleManagementPermissions { get; set; } = new();
     public List<ulong> RoleSanctionPermissions { get; set; } = new();
@@ -114,4 +123,11 @@ public class Config
     public required ulong HighPopRoleID { get; set; }
     //Роли
     public required ulong HOSTRoleID { get; set; }
+    public required ulong AdminRoleID { get; set; }
+    public required ulong GGMRoleID { get; set; }
+    public required ulong GMRoleID { get; set; }
+    public required ulong MGMRoleID { get; set; }
+    public required ulong SMRoleID { get; set; }
+    public required ulong WardenRoleID { get; set; }
+    public required ulong MRoleID { get; set; }
 }
