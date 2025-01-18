@@ -119,7 +119,8 @@ class Program
         {
             ("get_role_NewsRoleID", "Новости"),
             ("get_role_EventsRoleID", "Ивенты"),
-            ("get_role_HighPopRoleID", "Хайпоп")
+            ("get_role_HighPopRoleID", "Хайпоп"),
+            ("get_role_RoundsRoleID", "Раунды")
         };
 
         // Создаём и отправляем эмбеды с кнопками

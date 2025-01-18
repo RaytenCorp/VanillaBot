@@ -58,6 +58,7 @@ public static class ConfigLoader
                 NewsRoleID = 123456789012345678,
                 EventsRoleID = 123456789012345678,
                 HighPopRoleID = 123456789012345678,
+                RoundsRoleID = 123456789012345678,
                 HOSTRoleID = 123456789012345678,
                 AdminRoleID = 123456789012345678,
                 GGMRoleID = 123456789012345678,
@@ -121,6 +122,7 @@ public class Config
     public required ulong NewsRoleID { get; set; }
     public required ulong EventsRoleID { get; set; }
     public required ulong HighPopRoleID { get; set; }
+    public required ulong RoundsRoleID { get; set; }    
     //Роли
     public required ulong HOSTRoleID { get; set; }
     public required ulong AdminRoleID { get; set; }
