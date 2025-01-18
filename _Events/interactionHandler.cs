@@ -23,7 +23,7 @@ public class InteractionHandler
         _registry.RegisterHandler("get_role_NewsRoleID", new RoleButtonHandler(_config.NewsRoleID, _client,_config.GuildId)); 
         _registry.RegisterHandler("get_role_EventsRoleID", new RoleButtonHandler(_config.EventsRoleID, _client,_config.GuildId));
         _registry.RegisterHandler("get_role_HighPopRoleID", new RoleButtonHandler(_config.HighPopRoleID, _client,_config.GuildId)); 
-
+        _registry.RegisterHandler("get_role_RoundsRoleID", new RoleButtonHandler(_config.RoundsRoleID, _client,_config.GuildId)); 
         // Подписка на события взаимодействий
         _client.InteractionCreated += async (interaction) =>
         {
