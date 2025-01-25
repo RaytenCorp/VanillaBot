@@ -65,7 +65,7 @@ public class AwarnCommand : InteractionModuleBase<SocketInteractionContext>
         var warnNumber = activeWarnCount + 1;  // Это новый аварн для пользователя
 
         // Дата сгорания аварна (через 90 дней)
-        var expirationDate = DateTime.UtcNow.AddDays(1);
+        var expirationDate = DateTime.UtcNow.AddDays(90);
 
         Color embedColor;
         switch(warnNumber)
