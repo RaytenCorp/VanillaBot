@@ -17,7 +17,7 @@ public class CheckAuthCommand : InteractionModuleBase<SocketInteractionContext>
         _config = config;
     }
 
- [SlashCommand("checkauth", "ПРОВЕРИТЬ ВСЕХ НА АВТОРИЗАЦИЮ!")]
+[SlashCommand("checkauth", "ПРОВЕРИТЬ ВСЕХ НА АВТОРИЗАЦИЮ!")]
 public async Task CheckAuthAsync()
 {
     var user = Context.User as SocketGuildUser;
@@ -45,9 +45,10 @@ public async Task CheckAuthAsync()
         var authRole = guild.GetRole(_config.AuthRoleID);
         var notAuthRole = guild.GetRole(_config.NotAuthRoleID);
         
-        Console.WriteLine($"Пользователей на сервере: {guild.Users.Count}");
+        var allUsers = await guild.GetUsersAsync().FlattenAsync();
+        Console.WriteLine($"Пользователей на сервере: {allUsers.Count()}");
         
-        foreach (var guildUser in guild.Users)
+        foreach (var guildUser in allUsers)
         {
             bool isAuthorized = db.ContainsKey(guildUser.Id.ToString());
             Console.WriteLine($"Пользователь {guildUser.Username} ({guildUser.Id}): {(isAuthorized ? "авторизован" : "не авторизован")}");
@@ -89,5 +90,6 @@ public async Task CheckAuthAsync()
         await FollowupAsync("Произошла ошибка при выполнении команды.", ephemeral: true);
     }
 }
+
 
 }
