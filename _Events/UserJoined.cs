@@ -22,7 +22,7 @@ public class UserJoinHandler
     {
         _client.UserJoined += CheckMute;
         _client.UserJoined += Subscribe;
-        // _client.UserJoined += CheckAuth;
+        _client.UserJoined += CheckAuth;
         Console.WriteLine("UserJoinHandler инициализирован.");
     }
 
