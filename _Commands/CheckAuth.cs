@@ -16,7 +16,6 @@ public class CheckAuthCommand : InteractionModuleBase<SocketInteractionContext>
     {
         _config = config;
     }
-
 [SlashCommand("checkauth", "ПРОВЕРИТЬ ВСЕХ НА АВТОРИЗАЦИЮ!")]
 public async Task CheckAuthAsync()
 {
@@ -50,33 +49,36 @@ public async Task CheckAuthAsync()
         
         foreach (var guildUser in allUsers)
         {
-            bool isAuthorized = db.ContainsKey(guildUser.Id.ToString());
-            Console.WriteLine($"Пользователь {guildUser.Username} ({guildUser.Id}): {(isAuthorized ? "авторизован" : "не авторизован")}");
+            var socketUser = guildUser as SocketGuildUser;
+            if (socketUser == null) continue;
+            
+            bool isAuthorized = db.ContainsKey(socketUser.Id.ToString());
+            Console.WriteLine($"Пользователь {socketUser.Username} ({socketUser.Id}): {(isAuthorized ? "авторизован" : "не авторизован")}");
 
             if (isAuthorized)
             {
-                if (!guildUser.Roles.Contains(authRole))
+                if (!socketUser.Roles.Contains(authRole))
                 {
-                    Console.WriteLine($"Выдача роли авторизованного пользователю {guildUser.Username}");
-                    await guildUser.AddRoleAsync(authRole);
+                    Console.WriteLine($"Выдача роли авторизованного пользователю {socketUser.Username}");
+                    await socketUser.AddRoleAsync(authRole);
                 }
-                if (guildUser.Roles.Contains(notAuthRole))
+                if (socketUser.Roles.Contains(notAuthRole))
                 {
-                    Console.WriteLine($"Удаление роли неавторизованного у {guildUser.Username}");
-                    await guildUser.RemoveRoleAsync(notAuthRole);
+                    Console.WriteLine($"Удаление роли неавторизованного у {socketUser.Username}");
+                    await socketUser.RemoveRoleAsync(notAuthRole);
                 }
             }
             else
             {
-                if (!guildUser.Roles.Contains(notAuthRole))
+                if (!socketUser.Roles.Contains(notAuthRole))
                 {
-                    Console.WriteLine($"Выдача роли неавторизованного пользователю {guildUser.Username}");
-                    await guildUser.AddRoleAsync(notAuthRole);
+                    Console.WriteLine($"Выдача роли неавторизованного пользователю {socketUser.Username}");
+                    await socketUser.AddRoleAsync(notAuthRole);
                 }
-                if (guildUser.Roles.Contains(authRole))
+                if (socketUser.Roles.Contains(authRole))
                 {
-                    Console.WriteLine($"Удаление роли авторизованного у {guildUser.Username}");
-                    await guildUser.RemoveRoleAsync(authRole);
+                    Console.WriteLine($"Удаление роли авторизованного у {socketUser.Username}");
+                    await socketUser.RemoveRoleAsync(authRole);
                 }
             }
         }
@@ -90,6 +92,7 @@ public async Task CheckAuthAsync()
         await FollowupAsync("Произошла ошибка при выполнении команды.", ephemeral: true);
     }
 }
+
 
 
 }
