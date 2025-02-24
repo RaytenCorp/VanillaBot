@@ -40,21 +40,27 @@ public async Task CheckAuthAsync()
         var jsonData = File.ReadAllText(_config.BDpath);
         var db = JObject.Parse(jsonData);
         var guild = Context.Guild;
+        await guild.DownloadUsersAsync();
+        int authed=0;
+        int unauthed=0;
         foreach (var user in guild.Users)
         {
             Console.WriteLine($"проверяем {user.Id.ToString()}");
             // Проверяем наличие пользователя в базе по ключу
             if (db.ContainsKey(user.Id.ToString()))
             {
+                authed++;
                 Console.WriteLine($" {user.Id.ToString()} - авторизован");
                 await user.AddRoleAsync(user.Guild.GetRole(_config.AuthRoleID));
             }
             else
             {
+                unauthed++;
                 Console.WriteLine($" {user.Id.ToString()} - НЕ авторизован");
                 await user.AddRoleAsync(user.Guild.GetRole(_config.NotAuthRoleID)); // иначе выдаем роль не авторизованного
             }
         }
+        await FollowupAsync($"Обновлено {authed + unauthed} пользователей. Авторизованы - {authed}, не авторизованы - {unauthed}");
     }
     catch (Exception ex)
     {
