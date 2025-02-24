@@ -17,10 +17,10 @@ public class CheckAuthCommand : InteractionModuleBase<SocketInteractionContext>
         _config = config;
     }
 [SlashCommand("checkauth", "ПРОВЕРИТЬ ВСЕХ НА АВТОРИЗАЦИЮ!")]
-public async Task CheckAuthAsync()
+public async Task CheckAuthAsync(SocketGuild guild)
 {
-    var user = Context.User as SocketGuildUser;
-    if (user == null || !user.Roles.Any(role => role.Id == _config.HOSTRoleID))
+    var usersender = Context.User as SocketGuildUser;
+    if (usersender == null || !usersender.Roles.Any(role => role.Id == _config.HOSTRoleID))
     {
         await RespondAsync("У вас нет прав для выполнения этой команды.", ephemeral: true);
         return;
@@ -34,62 +34,31 @@ public async Task CheckAuthAsync()
         if (!File.Exists(_config.BDpath))
         {
             Console.WriteLine($"База данных не найдена по указанному пути: {_config.BDpath}");
-            await FollowupAsync("Ошибка: база данных не найдена.", ephemeral: true);
             return;
         }
-
+        // Считываем JSON и парсим его
         var jsonData = File.ReadAllText(_config.BDpath);
         var db = JObject.Parse(jsonData);
-        var guild = Context.Guild;
-        var authRole = guild.GetRole(_config.AuthRoleID);
-        var notAuthRole = guild.GetRole(_config.NotAuthRoleID);
-        
-        var allUsers = await guild.GetUsersAsync().FlattenAsync();
-        Console.WriteLine($"Пользователей на сервере: {allUsers.Count()}");
-        
-        foreach (var guildUser in allUsers)
-        {
-            var socketUser = guildUser as SocketGuildUser;
-            if (socketUser == null) continue;
-            
-            bool isAuthorized = db.ContainsKey(socketUser.Id.ToString());
-            Console.WriteLine($"Пользователь {socketUser.Username} ({socketUser.Id}): {(isAuthorized ? "авторизован" : "не авторизован")}");
 
-            if (isAuthorized)
+        foreach (var user in guild.Users)
+        {
+            Console.WriteLine($"проверяем {user.Id.ToString()}");
+            // Проверяем наличие пользователя в базе по ключу
+            if (db.ContainsKey(user.Id.ToString()))
             {
-                if (!socketUser.Roles.Contains(authRole))
-                {
-                    Console.WriteLine($"Выдача роли авторизованного пользователю {socketUser.Username}");
-                    await socketUser.AddRoleAsync(authRole);
-                }
-                if (socketUser.Roles.Contains(notAuthRole))
-                {
-                    Console.WriteLine($"Удаление роли неавторизованного у {socketUser.Username}");
-                    await socketUser.RemoveRoleAsync(notAuthRole);
-                }
+                Console.WriteLine($" {user.Id.ToString()} - авторизован");
+                await user.AddRoleAsync(user.Guild.GetRole(_config.AuthRoleID));
             }
             else
             {
-                if (!socketUser.Roles.Contains(notAuthRole))
-                {
-                    Console.WriteLine($"Выдача роли неавторизованного пользователю {socketUser.Username}");
-                    await socketUser.AddRoleAsync(notAuthRole);
-                }
-                if (socketUser.Roles.Contains(authRole))
-                {
-                    Console.WriteLine($"Удаление роли авторизованного у {socketUser.Username}");
-                    await socketUser.RemoveRoleAsync(authRole);
-                }
+                Console.WriteLine($" {user.Id.ToString()} - НЕ авторизован");
+                await user.AddRoleAsync(user.Guild.GetRole(_config.NotAuthRoleID)); // иначе выдаем роль не авторизованного
             }
         }
-
-        Console.WriteLine("Проверка авторизации завершена.");
-        await FollowupAsync("Проверка авторизации завершена.", ephemeral: true);
     }
     catch (Exception ex)
     {
         Console.WriteLine($"Ошибка при проверке авторизации: {ex.Message}");
-        await FollowupAsync("Произошла ошибка при выполнении команды.", ephemeral: true);
     }
 }
 
