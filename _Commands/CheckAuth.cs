@@ -17,7 +17,7 @@ public class CheckAuthCommand : InteractionModuleBase<SocketInteractionContext>
         _config = config;
     }
 [SlashCommand("checkauth", "ПРОВЕРИТЬ ВСЕХ НА АВТОРИЗАЦИЮ!")]
-public async Task CheckAuthAsync(SocketGuild guild)
+public async Task CheckAuthAsync()
 {
     var usersender = Context.User as SocketGuildUser;
     if (usersender == null || !usersender.Roles.Any(role => role.Id == _config.HOSTRoleID))
@@ -39,7 +39,7 @@ public async Task CheckAuthAsync(SocketGuild guild)
         // Считываем JSON и парсим его
         var jsonData = File.ReadAllText(_config.BDpath);
         var db = JObject.Parse(jsonData);
-
+        var guild = Context.Guild;
         foreach (var user in guild.Users)
         {
             Console.WriteLine($"проверяем {user.Id.ToString()}");
