@@ -66,6 +66,7 @@ public static class ConfigLoader
                 MGMRoleID = 123456789012345678,
                 SMRoleID = 123456789012345678,
                 WardenRoleID = 123456789012345678,
+                ChiefOfGuardRoleID = 123456789012345678,
                 MRoleID = 123456789012345678
             };
             await SaveConfigAsync(defaultConfig); 
@@ -131,5 +132,6 @@ public class Config
     public required ulong MGMRoleID { get; set; }
     public required ulong SMRoleID { get; set; }
     public required ulong WardenRoleID { get; set; }
+    public required ulong ChiefOfGuardRoleID { get; set; }
     public required ulong MRoleID { get; set; }
 }
