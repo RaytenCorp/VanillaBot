@@ -16,18 +16,20 @@ public class GetAvatarCommand : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("getavatar", "Получить аватар указанного пользователя")]
     public async Task GetAvatarAsync(
         [Summary("пользователь", "Укажите пользователя, чей аватар вы хотите получить")]
-        IUser? user = null) 
+        IUser? userparam = null) 
     {
+        userparam ??= Context.User;
 
-        var usersender = Context.User as SocketGuildUser;
-        if (usersender == null || !usersender.Roles.Any(role => role.Id == _config.HOSTRoleID))
+        var user = userparam as SocketGuildUser;
+
+        if (user == null || !user.Roles.Any(role => role.Id == _config.HOSTRoleID))
         {
             await RespondAsync("Мой хозяин запретил мне показывать его аватарки... <:O_cutte:1310747922689949716>");
             return;
         }        
 
         // Если пользователь не передан, использовать автора команды
-        user ??= Context.User;
+
 
         // Получение URL аватара
         string avatarUrl = user.GetAvatarUrl(ImageFormat.Auto, 1024) ?? user.GetDefaultAvatarUrl();
