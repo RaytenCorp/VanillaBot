@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace VanillaBot;
 public class RollCommand : InteractionModuleBase<SocketInteractionContext>
 {
+
     [SlashCommand("roll", "Возвращает случайное значение от 1 до 100 или до заданного параметра.")]
     public async Task RollAsync(
         [Summary("максимум", "Максимальное значение (по умолчанию 100).")]
@@ -22,7 +23,8 @@ public class RollCommand : InteractionModuleBase<SocketInteractionContext>
         // Генерируем случайное число
         Random random = new Random();
         int result = random.Next(1, max + 1);
-
+        result = result == 1488 ? 1487 : result;
+        
         // Формируем сообщение
         var user = Context.User as SocketUser;
 
