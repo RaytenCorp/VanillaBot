@@ -22,7 +22,7 @@ public class GetAvatarCommand : InteractionModuleBase<SocketInteractionContext>
 
         var user = userparam as SocketGuildUser;
 
-        if (user == null || !user.Roles.Any(role => role.Id == _config.HOSTRoleID))
+        if (user == null || user.Roles.Any(role => role.Id == _config.HOSTRoleID))
         {
             await RespondAsync("Мой хозяин запретил мне показывать его аватарки... <:O_cutte:1310747922689949716>");
             return;
