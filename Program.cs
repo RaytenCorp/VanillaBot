@@ -83,6 +83,7 @@ class Program
         // Инициализация менеджеров
         LocalEventManager.Initialize(_client, _config);
         SanctionManager.Initialize();
+        AWarnManager.Initialize();
 
         // ивент захода пользователя
         _userJoinHandler = new UserJoinHandler(_client, _config);

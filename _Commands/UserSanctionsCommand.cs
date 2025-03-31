@@ -31,7 +31,7 @@ public class UserSanctionCommand : InteractionModuleBase<SocketInteractionContex
         {
             var cleanReputationEmbed = new EmbedBuilder()
                 .WithTitle($"Список нарушений")
-                .WithDescription($"Репутация {user.Mention} - чиста. Ни одного нарушения.")
+                .WithDescription($"Репутация {user.Mention} чиста. Ни одного нарушения.")
                 .WithColor(Color.Green)
                 .Build();
             await RespondAsync(embed: cleanReputationEmbed, ephemeral: true);
