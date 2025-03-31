@@ -19,9 +19,14 @@ public class RemAwarnCommand : InteractionModuleBase<SocketInteractionContext>
     public async Task AwarnAsync(
         [Summary("id", "Номер аварна, который будет снят досрочно")] int ID,
         [Summary("причина", "Причина снятия")] string reason)
-
     {
-        var AwarnerUser = Context.User as SocketGuildUser;
+        if (Context.Guild == null)
+        {
+            await RespondAsync("Эта команда может выполняться только на сервере.", ephemeral: true);
+            return;
+        }
+
+        var awarnerUser = Context.User as SocketGuildUser;
         ulong? userid = AWarnManager.GetUserByAwarnID(ID);
 
         if (!userid.HasValue)
@@ -31,32 +36,24 @@ public class RemAwarnCommand : InteractionModuleBase<SocketInteractionContext>
         }
 
         IUser user = await Context.Client.Rest.GetUserAsync(userid.Value);
-        var target = Context.Guild.GetUser(userid.Value);
+        var target = Context.Guild.GetUser(userid.Value) ?? Context.Guild.Users.FirstOrDefault(u => u.Id == userid.Value);
 
-        if (AwarnerUser == null || user == null || target == null)
+        if (awarnerUser == null || user == null || target == null)
         {
-            await RespondAsync($"Эта команда может быть выполнена только на сервере. {AwarnerUser}; {user}; {target}", ephemeral: true);
+            await RespondAsync($"Ошибка: {nameof(awarnerUser)} = {awarnerUser}, {nameof(user)} = {user}, {nameof(target)} = {target}", ephemeral: true);
             return;
         }
+
         // Проверка на права
-        bool canWarn = false;
-        foreach (var roleId in AwarnerUser.Roles.Select(r => r.Id))
-        {
-            if (_config.RolePermissions.TryGetValue(roleId, out var allowedRoles) &&
-                allowedRoles.Any(allowedRole => target.Roles.Any(r => r.Id == allowedRole)))
-            {
-                canWarn = true;
-                break;
-            }
-        }
 
-        if (!canWarn)
+        if (!(awarnerUser.Roles.Any(r => _config.RolePermissions.TryGetValue(r.Id, out var allowedRoles) 
+            && allowedRoles.Any(allowedRole => target.Roles.Any(tr => tr.Id == allowedRole)))))
         {
-            await RespondAsync("У вас нет прав на снятия аварнов у этого пользователя.", ephemeral: true);
+            await RespondAsync("У вас нет прав на снятие аварнов у этого пользователя.", ephemeral: true);
             return;
         }
 
-        //проерка на существование канала
+        // Проверка существования канала
         var channel = Context.Client.GetChannel(_config.AWarnsChannelId) as IMessageChannel;
         if (channel == null)
         {
@@ -64,23 +61,21 @@ public class RemAwarnCommand : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-
         if (!AWarnManager.RemAwarn(ID))
         {
-            await RespondAsync($"аварна с id {ID} не существует.", ephemeral: true);
+            await RespondAsync($"Аварн с ID {ID} не существует.", ephemeral: true);
             return;
         }
 
         // Создаем embed сообщение
         var embed = new EmbedBuilder()
-            .WithTitle($"🙏 Обжалование")
+            .WithTitle("🙏 Обжалование")
             .WithDescription($"Аварн {ID} снят с пользователя {user.Mention}")
-            .AddField("Обжаловал", $"{Context.User.Mention}", true)
-            .AddField("Причина", $"{reason}", false)
+            .AddField("Обжаловал", Context.User.Mention, true)
+            .AddField("Причина", reason, false)
             .WithColor(Color.Green)
             .WithTimestamp(DateTimeOffset.Now)
             .Build();
-
 
         // Отправляем embed в указанный канал
         await channel.SendMessageAsync(embed: embed);
@@ -88,5 +83,6 @@ public class RemAwarnCommand : InteractionModuleBase<SocketInteractionContext>
         // Уведомляем администратора об успешной отправке
         await RespondAsync("Обжалование отправлено.", ephemeral: true);
     }
+
 
 }
