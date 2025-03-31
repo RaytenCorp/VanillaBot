@@ -36,7 +36,15 @@ public class RemAwarnCommand : InteractionModuleBase<SocketInteractionContext>
         }
 
         IUser user = await Context.Client.Rest.GetUserAsync(userid.Value);
-        var targetUser = user as SocketGuildUser;
+        var targetUser = Context.Guild.GetUser(userid.Value);
+        if (targetUser == null)
+        {
+            await DeferAsync(ephemeral: true);
+            await Context.Guild.DownloadUsersAsync();
+            targetUser = Context.Guild.GetUser(userid.Value);
+            await RespondAsync($"Выполните команду еще раз. Пользователь {targetUser} только что был закеширован");
+            return;
+        }
 
         if (awarnerUser == null || user == null || targetUser == null)
         {
