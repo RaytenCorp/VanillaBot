@@ -31,7 +31,7 @@ public class RemAwarnCommand : InteractionModuleBase<SocketInteractionContext>
         }
 
         IUser user = await Context.Client.Rest.GetUserAsync(userid.Value);
-        var target = user as SocketGuildUser;
+        var target = Context.Guild.GetUser(userid.Value);
 
         if (AwarnerUser == null || user == null || target == null)
         {
