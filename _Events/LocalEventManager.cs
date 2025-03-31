@@ -47,7 +47,6 @@ namespace VanillaBot
 
             // Удаляем роль
             await guildUser.RemoveRoleAsync(muteRole);
-            Console.WriteLine($"Role 'Mute' has been removed from user {userId}");
         }
 
     }

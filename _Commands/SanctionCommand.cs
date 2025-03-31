@@ -17,10 +17,10 @@ public class SanctionCommand : InteractionModuleBase<SocketInteractionContext>
         _config = config;
     }
 
-    [SlashCommand("sanction", "Issues a sanction to a user.")]
+    [SlashCommand("addsanction", "Жёстко наказать пользователя")]
     public async Task SanctionAsync(
-        [Summary("user", "The user to sanction.")] IUser user,
-        [Summary("description", "The reason for the sanction.")] string description)
+        [Summary("user", "Пользователь, которого наказываем")] IUser user,
+        [Summary("description", "Описание, обязательно заполните его НОРМАЛЬНО")] string description)
     {
         //прежде всего очищаем старые санкции
         SanctionManager.RemoveExpiredSanctions();
@@ -47,42 +47,43 @@ public class SanctionCommand : InteractionModuleBase<SocketInteractionContext>
 
 
         string sanctionDetails = "";
+        int sanctionNumber = await CounterManager.GetNextCounterAsync("sanctionCounter");
         switch (userSanctions.Count)
         {
             case 0:
                 sanctionType = SanctionType.Warn;
-                SanctionManager.AddSanction(userId, description, SanctionType.Warn);
+                SanctionManager.AddSanction(userId, description, SanctionType.Warn, sanctionNumber);
                 sanctionDetails = "предупреждение";
                 break;
             case 1:
                 sanctionType = SanctionType.Mute;
                 muteExpiry = DateTime.UtcNow.AddDays(3);
-                SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                SanctionManager.AddSanction(userId, description, SanctionType.Mute, sanctionNumber, muteExpiry);
                 sanctionDetails = "Мут на 3 дня";
                 break;
             case 2:
                 sanctionType = SanctionType.Mute;
                 muteExpiry = DateTime.UtcNow.AddDays(5);
-                SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                SanctionManager.AddSanction(userId, description, SanctionType.Mute, sanctionNumber, muteExpiry);
                 sanctionDetails = "Мут на 5 дней";
                 break;
             case 3:
                 sanctionType = SanctionType.Mute;
                 muteExpiry = DateTime.UtcNow.AddDays(8);
-                SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                SanctionManager.AddSanction(userId, description, SanctionType.Mute, sanctionNumber, muteExpiry);
                 sanctionDetails = "Мут на 8 дней";
                 break;
             case 4:
                 sanctionType = SanctionType.Mute;
                 muteExpiry = DateTime.UtcNow.AddDays(13);
-                SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                SanctionManager.AddSanction(userId, description, SanctionType.Mute, sanctionNumber, muteExpiry);
                 await guildUser.AddRoleAsync(Context.Guild.GetRole(_config.PoopRoleID)); //на 5 раз выдаем роль грязнули
                 sanctionDetails = "Мут на 13 дней, а также особая роль! Следующее наказание приведёт к бану.";
                 break;
             case 5:
                 sanctionType = SanctionType.Mute;
                 muteExpiry = DateTime.UtcNow.AddDays(21);
-                SanctionManager.AddSanction(userId, description, SanctionType.Mute, muteExpiry);
+                SanctionManager.AddSanction(userId, description, SanctionType.Mute, sanctionNumber, muteExpiry);
                 sanctionDetails = "Мут на 21 день. На рассмотрении об исключении из сообщества.";
                 break;
             default:
@@ -120,7 +121,7 @@ public class SanctionCommand : InteractionModuleBase<SocketInteractionContext>
         }
         await RespondAsync($"Выдано {userSanctions.Count + 1} наказание {user.Mention}: {sanctionType}. Причина: {description}", ephemeral: true);
 
-        int sanctionNumber = await CounterManager.GetNextCounterAsync("sanctionCounter");
+
         // Создание embed-сообщения для отправки в канал ReportChannelId
         var embed = new EmbedBuilder()
             .WithTitle($"Наказание № {sanctionNumber}")

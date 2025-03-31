@@ -29,10 +29,11 @@ public static class SanctionManager
         Console.WriteLine("SanctionManager инициализирован.");
     }
 
-    public static void AddSanction(ulong userId, string reason, SanctionType type, DateTime? muteExpiry = null)
+    public static void AddSanction(ulong userId, string reason, SanctionType type, int id, DateTime? muteExpiry = null)
     {
         var sanction = new SanctionRecord
         {
+            ID = id,
             UserId = userId,
             Reason = reason,
             Type = type,
@@ -43,6 +44,30 @@ public static class SanctionManager
         Sanctions.Add(sanction);
         SaveSanctions();
     }
+    public static bool RemSanction(int id)
+    {
+        var sanctionToRemove = Sanctions.FirstOrDefault(s => s.ID == id);
+        
+        if (sanctionToRemove != null)
+        {
+            if (sanctionToRemove.Type == SanctionType.Mute)
+            {
+                MuteExpired?.Invoke(sanctionToRemove.UserId);
+            }
+
+            Sanctions.RemoveAll(s => s.ID == id);
+            SaveSanctions();
+            return true;
+        }
+        
+        return false;
+    }
+    public static ulong? GetUserBySanctionID(int id)
+    {
+        var sanction = Sanctions.FirstOrDefault(s => s.ID == id);
+        return sanction?.UserId;
+    }
+
 
     public static List<SanctionRecord> GetSanctionsForUser(ulong userId)
     {
@@ -94,6 +119,7 @@ public static class SanctionManager
 
 public class SanctionRecord
 {
+    public int ID { get; set; }
     public ulong UserId { get; set; }
     public required string Reason { get; set; }
     public SanctionType Type { get; set; }
