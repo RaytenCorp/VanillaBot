@@ -95,10 +95,16 @@ public static class AWarnManager
 
     private static void LoadAwarns()
     {
-        if (File.Exists(FilePath))
+        try 
         {
             var json = File.ReadAllText(FilePath);
             Awarns = JsonConvert.DeserializeObject<List<AwarnRecord>>(json) ?? new List<AwarnRecord>();
+            Console.WriteLine($"Загружено {Awarns.Count} записей");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка загрузки: {ex.Message}");
+            Awarns = new List<AwarnRecord>();
         }
     }
 

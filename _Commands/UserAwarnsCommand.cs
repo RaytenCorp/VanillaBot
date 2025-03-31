@@ -11,20 +11,17 @@ public class UserAwarnsCommand : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("userawarns", "Показать все аварны указанного пользователя и их даты сгорания.")]
     public async Task UserAwarnsAsync([Summary("пользователь", "Укажите пользователя для проверки варнов.")] IUser user)
     {
-        var targetUser = user;
-        var userId = targetUser.Id;
-
         // Получаем все аварны пользователя
-        var userWarns = AWarnManager.GetAwarnsForUser(userId);
+        var userWarns = AWarnManager.GetAwarnsForUser(user.Id);
 
-        if (userWarns == null || userWarns.Count == 0)
+        if (userWarns.Count == 0)
         {
-            await RespondAsync($"{targetUser.Username} не имеет аварнов.", ephemeral: true);
+            await RespondAsync($"{user.Username} не имеет аварнов.", ephemeral: true);
             return;
         }
 
         var embed = new EmbedBuilder()
-            .WithTitle($"Аварны пользователя {targetUser.Username}")
+            .WithTitle($"Аварны пользователя {user.Username}")
             .WithColor(Color.Blue)
             .WithTimestamp(DateTimeOffset.Now);
 
