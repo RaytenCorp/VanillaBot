@@ -35,7 +35,7 @@ public class UserAwarnsCommand : InteractionModuleBase<SocketInteractionContext>
                     $"{Typeofawarn} от {warn.AwarnDate:dd.MM.yyyy}",
                     $"**Причина:** {warn.Reason}\n" +
                     $"**Действует до:** {expirationDate:dd.MM.yyyy}",
-                    true);
+                    false);
             }
 
             await RespondAsync(embed: embed.Build(), ephemeral: true);

@@ -97,17 +97,16 @@ public class MessageHandler
                 // Название ветки будет взято из embed.title
                 string threadName = embed.Title ?? "Отчёт о событии";
 
-                var textChannel = message.Channel as ITextChannel;
-
-                // Создаём ветку, привязанную к сообщению с эмбедами
-                var thread = await textChannel.CreateThreadAsync(
-                    threadName,
-                    ThreadType.PublicThread,
-                    ThreadArchiveDuration.OneDay,
-                    userMessage // Привязываем ветку к сообщению
-                );
-
-                Console.WriteLine($"Создана ветка с названием: {threadName}");
+                if (message.Channel is ITextChannel textChannel)
+                {
+                    var thread = await textChannel.CreateThreadAsync(
+                        threadName,
+                        ThreadType.PublicThread,
+                        ThreadArchiveDuration.OneDay,
+                        userMessage
+                    );
+                    Console.WriteLine($"Создана ветка: {threadName}");
+                }
             }
         }
     }
