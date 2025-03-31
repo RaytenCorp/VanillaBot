@@ -18,7 +18,13 @@ public class AwarnCommand : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("awarn", "Дать по жопе администратору")]
     public async Task AwarnAsync(
         [Summary("пользователь", "Пользователь, которому выдать предупреждение")] IUser user,
-        [Summary("причина", "Причина предупреждения")] string reason = "Не указана")
+        [Summary("причина", "Причина предупреждения")] string reason,
+        
+        [Summary("Тип", "Тип аварна")]
+        [Choice("Аварн", (int)AwarnType.FullWarn)]
+        [Choice("Полуварн", (int)AwarnType.HalfWarn)]
+        AwarnType awarntype)
+
     {
         var AwarnerUser = Context.User as SocketGuildUser;
         var targetUser = user as SocketGuildUser;
@@ -55,14 +61,14 @@ public class AwarnCommand : InteractionModuleBase<SocketInteractionContext>
         }
 
         // Получаем список аварнов пользователя
-        var activeWarnCount = await AWarnManager.GetActiveWarnCountAsync(targetUser.Id);
-        // Получаем номер аварна
-        int warningNumber = await CounterManager.GetNextCounterAsync("warningCounter");
-        // Добавляем новый аварн
-        await AWarnManager.AddWarnAsync(targetUser.Id);
+        float activeWarnsCount = AWarnManager.GetAwarnCounter(targetUser.Id);
+        float warnNumber =  awarntype == AwarnType.FullWarn ? activeWarnsCount + 1f : activeWarnsCount + 0.5f; 
 
-        // Получаем следующий номер предупреждения
-        var warnNumber = activeWarnCount + 1;  // Это новый аварн для пользователя
+        // Добавляем новый аварн
+        int warningNumber = await CounterManager.GetNextCounterAsync("warningCounter");
+        AWarnManager.AddAwarn(targetUser.Id, reason, awarntype, warningNumber);
+
+
 
         // Дата сгорания аварна (через 90 дней)
         var expirationDate = DateTime.UtcNow.AddDays(90);
@@ -70,12 +76,15 @@ public class AwarnCommand : InteractionModuleBase<SocketInteractionContext>
         Color embedColor;
         switch(warnNumber)
         {
+        case 0.5f:
         case 1:
             embedColor = new Color(0, 0, 255);  // Первый аварн - синий
             break;
+        case 1.5f:
         case 2:
             embedColor = new Color(255, 255, 0);  // Второй аварн - жёлтый
             break;
+        case 2.5f:
         case 3:
             embedColor = new Color(255, 0, 0);  // Третий аварн - красный
             break;

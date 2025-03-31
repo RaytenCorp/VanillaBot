@@ -1,136 +1,130 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Timer = System.Timers.Timer;
 
-namespace VanillaBot
+namespace VanillaBot;
+public static class AWarnManager
 {
-    public static class AWarnManager
+    private static readonly string FilePath = Path.Combine("data", "awarns.json");
+
+    public static List<AwarnRecord> Awarns { get; private set; } = new();
+
+    static AWarnManager()
     {
-        private static readonly string AwarnsFilePath = Path.Combine("data", "awarns.json");
-
-        // Метод для загрузки всех аварнов
-        private static async Task<Dictionary<ulong, UserWarnData>> LoadAwarnsAsync()
-        {
-            if (File.Exists(AwarnsFilePath))
-            {
-                var json = await File.ReadAllTextAsync(AwarnsFilePath);
-                return JsonConvert.DeserializeObject<Dictionary<ulong, UserWarnData>>(json) ?? new Dictionary<ulong, UserWarnData>();
-            }
-            else
-            {
-                return new Dictionary<ulong, UserWarnData>();
-            }
-        }
-
-        // Метод для сохранения всех аварнов
-        private static async Task SaveAwarnsAsync(Dictionary<ulong, UserWarnData> awarns)
-        {
-            Directory.CreateDirectory("data");
-            var json = JsonConvert.SerializeObject(awarns, Formatting.Indented);
-            await File.WriteAllTextAsync(AwarnsFilePath, json);
-        }
-
-        // Метод для добавления нового аварна
-        public static async Task AddWarnAsync(ulong userId)
-        {
-            var awarns = await LoadAwarnsAsync();
-            var currentDate = DateTime.UtcNow;
-
-            // Если данных для пользователя нет, создаем новый список аварнов
-            if (!awarns.ContainsKey(userId))
-            {
-                awarns[userId] = new UserWarnData { Warns = new List<Warn>() };
-            }
-
-            var userWarnData = awarns[userId];
-
-            // Добавляем новый аварн с текущей датой
-            userWarnData.Warns.Add(new Warn { WarnDate = currentDate });
-
-            // Удаляем старые аварны (если им больше 3 месяцев)
-            userWarnData.Warns = userWarnData.Warns.Where(warn => (currentDate - warn.WarnDate).TotalDays <= 90).ToList();
-
-            // Сохраняем изменения
-            await SaveAwarnsAsync(awarns);
-        }
-
-        // Метод для получения количества активных аварнов
-        public static async Task<int> GetActiveWarnCountAsync(ulong userId)
-        {
-            var awarns = await LoadAwarnsAsync();
-            if (awarns.ContainsKey(userId))
-            {
-                var userWarnData = awarns[userId];
-                var currentDate = DateTime.UtcNow;
-
-                // Удаляем все аварны, срок действия которых истёк (больше 3 месяцев)
-                userWarnData.Warns = userWarnData.Warns.Where(warn => (currentDate - warn.WarnDate).TotalDays <= 90).ToList();
-
-                // Сохраняем обновления
-                await SaveAwarnsAsync(awarns);
-
-                // Возвращаем количество активных аварнов
-                return userWarnData.Warns.Count;
-            }
-            else
-            {
-                // Если нет аварнов, то возвращаем 0
-                return 0;
-            }
-        }
-        //метод, который возвращает список всех аварнов пользователя
-        public static async Task<List<WarnDetails>> GetUserWarnsAsync(ulong userId)
-        {
-            var awarns = await LoadAwarnsAsync(); //смотрим все аварны на сервере
-            if (awarns.ContainsKey(userId))
-            {
-                var userWarnData = awarns[userId];
-                var currentDate = DateTime.UtcNow;
-
-                var warnDetailsList = new List<WarnDetails>();
-
-                // Удаляем все аварны, срок действия которых истёк (больше 3 месяцев)
-                userWarnData.Warns = userWarnData.Warns.Where(warn => (currentDate - warn.WarnDate).TotalDays <= 90).ToList();
-
-                // Добавляем только активные аварны в список
-                foreach (var warn in userWarnData.Warns)
-                {
-                    var expirationDate = warn.WarnDate.AddDays(90);
-                    warnDetailsList.Add(new WarnDetails
-                    {
-                        WarnDate = warn.WarnDate,
-                        ExpirationDate = expirationDate
-                    });
-                }
-                await SaveAwarnsAsync(awarns);
-
-                return warnDetailsList;
-            }
-
-            return new List<WarnDetails>();
-        }
-
 
     }
-
-    // Класс для хранения данных о пользователе
-    public class UserWarnData
+    
+    public static void Initialize()
     {
-        public List<Warn> Warns { get; set; } = new List<Warn>(); // Инициализация списка
+        LoadAwarns();
+        RemoveExpiredAwarns();
+        Console.WriteLine("AWarnManager инициализирован.");
     }
 
-    // Класс для хранения данных об отдельном аварне
-    public class Warn
+    public static void AddAwarn(ulong userId, string reason, AwarnType type, int id)
     {
-        public DateTime WarnDate { get; set; } // Дата получения аварна
+        var awarn = new AwarnRecord
+        {
+            ID = id,
+            UserId = userId,
+            Reason = reason,
+            Type = type,
+            AwarnDate = DateTime.UtcNow
+        };
+
+        Awarns.Add(awarn);
+        SaveAwarns();
     }
-    public class WarnDetails
+    public static bool RemAwarn(int id)
     {
-        public DateTime WarnDate { get; set; }   // Дата получения аварна
-        public DateTime ExpirationDate { get; set; }  // Дата сгорания аварна
+        var AwarnToRemove = Awarns.FirstOrDefault(s => s.ID == id);
+        
+        if (AwarnToRemove != null)
+        {
+            Awarns.RemoveAll(s => s.ID == id);
+            SaveAwarns();
+            return true;
+        }
+        
+        return false;
     }
 
+    public static ulong? GetUserByAwarnID(int id)
+    {
+        var Awarn = Awarns.FirstOrDefault(s => s.ID == id);
+        return Awarn?.UserId;
+    }
+
+    public static List<AwarnRecord> GetAwarnsForUser(ulong userId)
+    {
+        return Awarns.Where(s => s.UserId == userId).ToList();
+    }
+
+    public static float GetAwarnCounter(ulong userId)
+    {
+        var awarnList = GetAwarnsForUser(userId);
+        float total = 0f;
+        
+        foreach (var awarn in awarnList)
+        {
+            switch (awarn.Type)
+            {
+                case AwarnType.HalfWarn:
+                    total += 0.5f;
+                    break;
+                case AwarnType.FullWarn:
+                    total += 1f;
+                    break;
+            }
+        }
+        
+        return total;
+    }
+
+
+    public static void RemoveExpiredAwarns()
+    {
+        Awarns.RemoveAll(s =>
+            s.AwarnDate.AddMonths(3) <= DateTime.UtcNow);
+
+        SaveAwarns();
+    }
+
+    private static void LoadAwarns()
+    {
+        if (File.Exists(FilePath))
+        {
+            var json = File.ReadAllText(FilePath);
+            Awarns = JsonConvert.DeserializeObject<List<AwarnRecord>>(json) ?? new List<AwarnRecord>();
+        }
+    }
+
+    private static void SaveAwarns()
+    {
+        var directoryPath = Path.GetDirectoryName(FilePath);
+        if (directoryPath != null)
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+        var json = JsonConvert.SerializeObject(Awarns, Formatting.Indented);
+        File.WriteAllText(FilePath, json);
+    }
+}
+
+public class AwarnRecord
+{
+    public int ID { get; set; }
+    public ulong UserId { get; set; }
+    public required string Reason { get; set; }
+    public AwarnType Type { get; set; }
+    public DateTime AwarnDate { get; set; }
+}
+
+public enum AwarnType
+{
+    FullWarn = 0,
+    HalfWarn = 1
 }

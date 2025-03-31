@@ -15,7 +15,7 @@ public class UserAwarnsCommand : InteractionModuleBase<SocketInteractionContext>
         var userId = targetUser.Id;
 
         // Получаем все аварны пользователя
-        var userWarns = await AWarnManager.GetUserWarnsAsync(userId);
+        var userWarns = AWarnManager.GetAwarnsForUser(userId);
 
         if (userWarns == null || userWarns.Count == 0)
         {
@@ -31,11 +31,15 @@ public class UserAwarnsCommand : InteractionModuleBase<SocketInteractionContext>
         // Добавляем информацию о каждом аварне
         foreach (var warn in userWarns)
         {
-            // Дата сгорания - через 3 месяца после даты получения аварна
-            var expirationDate = warn.WarnDate.AddDays(90);
+            var expirationDate = warn.AwarnDate.AddDays(90);
 
-            embed.AddField($"Аварн от {warn.WarnDate:dd MMM yyyy}",
+           string Typeofawarn = warn.Type == AwarnType.FullWarn ? "Аварн" : "Полуварн";
+
+            embed.AddField($"Аварн от {warn.AwarnDate:dd MMM yyyy}",
                 $"Дата окончания: {expirationDate:dd MMM yyyy}",
+                false);
+            embed.AddField($"Причина: {warn.Reason}",
+                $"Тип: {Typeofawarn}",
                 false);
         }
 
