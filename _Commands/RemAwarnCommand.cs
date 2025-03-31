@@ -35,7 +35,7 @@ public class RemAwarnCommand : InteractionModuleBase<SocketInteractionContext>
 
         if (AwarnerUser == null || user == null || target == null)
         {
-            await RespondAsync("Эта команда может быть выполнена только на сервере.", ephemeral: true);
+            await RespondAsync($"Эта команда может быть выполнена только на сервере. {AwarnerUser}; {user}; {target}", ephemeral: true);
             return;
         }
         // Проверка на права
