@@ -36,20 +36,29 @@ public class RemAwarnCommand : InteractionModuleBase<SocketInteractionContext>
         }
 
         IUser user = await Context.Client.Rest.GetUserAsync(userid.Value);
-        var target = Context.Guild.GetUser(userid.Value) ?? Context.Guild.Users.FirstOrDefault(u => u.Id == userid.Value);
+        var targetUser = user as SocketGuildUser;
 
-        if (awarnerUser == null || user == null || target == null)
+        if (awarnerUser == null || user == null || targetUser == null)
         {
-            await RespondAsync($"Ошибка: {nameof(awarnerUser)} = {awarnerUser}, {nameof(user)} = {user}, {nameof(target)} = {target}", ephemeral: true);
+            await RespondAsync($"Ошибка: {nameof(awarnerUser)} = {awarnerUser}, {nameof(user)} = {user}, {nameof(targetUser)} = {targetUser}", ephemeral: true);
             return;
         }
 
         // Проверка на права
-
-        if (!(awarnerUser.Roles.Any(r => _config.RolePermissions.TryGetValue(r.Id, out var allowedRoles) 
-            && allowedRoles.Any(allowedRole => target.Roles.Any(tr => tr.Id == allowedRole)))))
+        bool canWarn = false;
+        foreach (var roleId in awarnerUser.Roles.Select(r => r.Id))
         {
-            await RespondAsync("У вас нет прав на снятие аварнов у этого пользователя.", ephemeral: true);
+            if (_config.RolePermissions.TryGetValue(roleId, out var allowedRoles) &&
+                allowedRoles.Any(allowedRole => targetUser.Roles.Any(r => r.Id == allowedRole)))
+            {
+                canWarn = true;
+                break;
+            }
+        }
+
+        if (!canWarn)
+        {
+            await RespondAsync("У вас нет прав на выдачу предупреждений этому пользователю.", ephemeral: true);
             return;
         }
 
