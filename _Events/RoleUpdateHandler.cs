@@ -80,6 +80,7 @@ public class RoleUpdateHandler
             {
                 { _config.GrayTide, SponsorRank.GrayTide },
                 { _config.Revolutionary, SponsorRank.Revolutionary },
+                { _config.Syndicate, SponsorRank.Syndicate },
                 { _config.SpaceNinja, SponsorRank.SpaceNinja }
             };
 
@@ -98,6 +99,7 @@ public class RoleUpdateHandler
             {
                 if (sponsorData.Remove(cikey))
                     Console.WriteLine($"Удалён {cikey} из sponsor.json (нет спонсорских ролей).");
+                announce(highestRank.ToString(), username, cikey, true);
             }
             else
             {
@@ -125,7 +127,7 @@ public class RoleUpdateHandler
         try
         {
             string message = removed
-            ? $"❌ У пользователя **{username}** удалён спонсорский ранг **{sponsorRank}** (CIKEY `{cikey}`)."
+            ? $"❌ У пользователя **{username}** удалён спонсорский ранг (CIKEY `{cikey}`)."
             : $"✅ Пользователю **{username}** установлен ранг **{sponsorRank}** по CIKEY `{cikey}`.";
 
             var logChannel = _client.GetChannel(_config.HostChannelID) as IMessageChannel;
@@ -154,6 +156,7 @@ public enum SponsorRank
     None = 1,
     GrayTide = 2,
     Revolutionary = 3,
-    SpaceNinja = 4,
+    Syndicate = 4,
+    SpaceNinja = 5,
 }
 }
