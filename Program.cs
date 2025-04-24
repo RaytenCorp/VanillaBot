@@ -79,7 +79,11 @@ class Program
 
         await _commands.RegisterCommandsToGuildAsync(_config.GuildId);
         Console.WriteLine("Команды зарегистрированы.");
-        
+        foreach (var guild in _client.Guilds)
+        {
+            Console.WriteLine($"Загрузка участников для гильдии: {guild.Name}");
+            await guild.DownloadUsersAsync();
+        }
         // Инициализация менеджеров
         LocalEventManager.Initialize(_client, _config);
         SanctionManager.Initialize();
