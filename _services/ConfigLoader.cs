@@ -21,8 +21,10 @@ public static class ConfigLoader
             {
                 Token = "YOUR_TOKEN_HERE",
                 BDpath = "Path to auth.json",
+                SponsorBDpath = "Path to sponsor.json",
                 GuildId = 123456789012345678,
                 AWarnsChannelId = 123456789012345678,
+                HostChannelID = 123456789012345678,
                 HelpChannelId = 123456789012345678,
                 SanctionChannelID = 123456789012345678,
                 ReportChannelId = 123456789012345678,
@@ -67,7 +69,12 @@ public static class ConfigLoader
                 SMRoleID = 123456789012345678,
                 WardenRoleID = 123456789012345678,
                 ChiefOfGuardRoleID = 123456789012345678,
-                MRoleID = 123456789012345678
+                MRoleID = 123456789012345678,
+                //sponsor-roles
+                GrayTide = 123456789012345678,
+                Revolutionary = 123456789012345678,
+                Syndicate = 123456789012345678,
+                SpaceNinja = 123456789012345678
             };
             await SaveConfigAsync(defaultConfig); 
             return defaultConfig;
@@ -91,7 +98,9 @@ public class Config
 {
     public required string Token { get; set; }
     public required string BDpath { get; set; }
+    public required string SponsorBDpath { get; set; }    
     public required ulong GuildId { get; set; }
+    public required ulong HostChannelID { get; set; }
     public required ulong AWarnsChannelId { get; set; }
     public required ulong SanctionChannelID { get; set; }
     public required ulong ReportChannelId { get; set; } 
@@ -134,4 +143,8 @@ public class Config
     public required ulong WardenRoleID { get; set; }
     public required ulong ChiefOfGuardRoleID { get; set; }
     public required ulong MRoleID { get; set; }
+    public required ulong GrayTide { get; set; }
+    public required ulong Revolutionary { get; set; }
+    public required ulong Syndicate { get; set; }
+    public required ulong SpaceNinja { get; set; }
 }

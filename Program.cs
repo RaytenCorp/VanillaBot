@@ -12,7 +12,7 @@ class Program
     private static UserJoinHandler _userJoinHandler = null!;
     private static MessageHandler _messageHandler = null!;
     private static InteractionHandler _interactionHandler = null!;
-
+    private static RoleUpdateHandler _roleUpdateHandler = null!;
     private static DiscordSocketConfig clientConfig = new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages
@@ -94,6 +94,9 @@ class Program
         // ивент нажатия на кнопку
         _interactionHandler = new InteractionHandler(_client, _config);
         _interactionHandler.Initialize();  // Инициализация обработчика
+        // ивент смены роли
+        _roleUpdateHandler = new RoleUpdateHandler(_client, _config);
+        _roleUpdateHandler.Initialize();  // Инициализация обработчика
 
         // кнопки кнопочки
         await createRoleSelectionBtns();
