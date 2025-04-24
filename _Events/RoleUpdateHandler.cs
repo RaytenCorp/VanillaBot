@@ -48,6 +48,11 @@ private async Task HandleRoleChange(Cacheable<SocketGuildUser, ulong> beforeCach
         }
 
         var before = await beforeCache.GetOrDownloadAsync();
+        if (before == null)
+        {
+            Console.WriteLine($"Ошибка: Не удалось получить предыдущее состояние пользователя {after.Id}");
+            return;
+        }
         var addedRoles = after.Roles.Except(before.Roles).ToList();
         var removedRoles = before.Roles.Except(after.Roles).ToList();
 
