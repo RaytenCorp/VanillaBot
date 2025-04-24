@@ -12,3 +12,5 @@ temp/
 appsettings.Development.json
 .vscode/
 .idea/
+published/
+
