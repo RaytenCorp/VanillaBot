@@ -59,6 +59,12 @@ public class RoleUpdateHandler
                 ? JObject.Parse(await File.ReadAllTextAsync(sponsorPath))
                 : new JObject();
 
+            if (!File.Exists(sponsorPath))
+            {
+                Console.WriteLine($"Файл данных спонсоров не найден по пути: {sponsorPath}");
+                return;
+            }
+            
             foreach (var role in addedRoles)
             {
                 if (role.Id == _config.GrayTide)
