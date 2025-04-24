@@ -25,101 +25,133 @@ public class RoleUpdateHandler
         Console.WriteLine("RoleUpdateHandler инициализирован.");
     }
 
-    private async Task HandleRoleChange(Cacheable<SocketGuildUser, ulong> beforeCache, SocketGuildUser after)
+private async Task HandleRoleChange(Cacheable<SocketGuildUser, ulong> beforeCache, SocketGuildUser after)
+{
+    try
     {
-        try
+        if (_config == null)
         {
-            var before = await beforeCache.GetOrDownloadAsync();
-            var addedRoles = after.Roles.Except(before.Roles).ToList();
-            var removedRoles = before.Roles.Except(after.Roles).ToList();
-
-            // Получаем Discord ID
-            var discordId = after.Id.ToString();
-
-            // Загружаем auth.json
-            var authPath = _config.BDpath;
-            var authData = JObject.Parse(await File.ReadAllTextAsync(authPath));
-
-            if (!authData.ContainsKey(discordId))
-            {
-                Console.WriteLine($"Пользователь с Discord ID {discordId} не найден в {authPath}, видимо он не авторизован");
-                return;
-            }
-
-            string? cikey = authData[discordId]?["cikey"]?.ToString();
-
-            if (string.IsNullOrWhiteSpace(cikey))
-            {
-                Console.WriteLine($"CIKEY не найден или пустой для пользователя {discordId}");
-                return;
-            }
-
-            var sponsorPath = _config.SponsorBDpath;
-            var sponsorData = File.Exists(sponsorPath)
-                ? JObject.Parse(await File.ReadAllTextAsync(sponsorPath))
-                : new JObject();
-
-            if (!File.Exists(sponsorPath))
-            {
-                Console.WriteLine($"Файл данных спонсоров не найден по пути: {sponsorPath}");
-                return;
-            }
-            
-            foreach (var role in addedRoles)
-            {
-                if (role.Id == _config.GrayTide)
-                {
-                    sponsorData[cikey] = "GrayTide";
-                    announce("Грейтайд", after.Username, cikey, false);
-                }
-                if (role.Id == _config.Revolutionary)
-                {
-                    sponsorData[cikey] = "Revolutionary";
-                    announce("Революционер", after.Username, cikey, false);
-                }
-                if (role.Id == _config.Syndicate)
-                {
-                    sponsorData[cikey] = "Syndicate";
-                    announce("Синдикат", after.Username, cikey, false);
-                }
-                if (role.Id == _config.SpaceNinja)
-                {
-                    sponsorData[cikey] = "SpaceNinja";
-                    announce("Космический ниндзя", after.Username, cikey, false);
-                }
-            }
-
-            foreach (var role in removedRoles)
-            {
-                if (role.Id == _config.GrayTide)
-                {
-                    sponsorData.Remove(cikey);
-                    announce("GrayTide", after.Username, cikey, true);
-                }
-                if (role.Id == _config.Revolutionary)
-                {
-                    sponsorData.Remove(cikey);
-                    announce("Revolutionary", after.Username, cikey, true);
-                }
-                if (role.Id == _config.Syndicate)
-                {
-                    sponsorData.Remove(cikey);
-                    announce("Syndicate", after.Username, cikey, true);
-                }
-                if (role.Id == _config.SpaceNinja)
-                {
-                    sponsorData.Remove(cikey);
-                    announce("SpaceNinja", after.Username, cikey, true);
-                }
-            }
-
-            await File.WriteAllTextAsync(sponsorPath, sponsorData.ToString());
+            Console.WriteLine("Ошибка: _config == null");
+            return;
         }
-        catch (Exception ex)
+
+        if (string.IsNullOrWhiteSpace(_config.BDpath))
         {
-            Console.WriteLine($"Ошибка при обновлении спонсорских данных: {ex.Message}");
+            Console.WriteLine("Ошибка: Путь к auth.json (_config.BDpath) не указан");
+            return;
         }
+
+        if (string.IsNullOrWhiteSpace(_config.SponsorBDpath))
+        {
+            Console.WriteLine("Ошибка: Путь к sponsor.json (_config.SponsorBDpath) не указан");
+            return;
+        }
+
+        var before = await beforeCache.GetOrDownloadAsync();
+        var addedRoles = after.Roles.Except(before.Roles).ToList();
+        var removedRoles = before.Roles.Except(after.Roles).ToList();
+
+        var discordId = after.Id.ToString();
+        Console.WriteLine($"Обработка изменений ролей для пользователя {discordId} ({after.Username})");
+
+        // Чтение auth.json
+        var authPath = _config.BDpath;
+        if (!File.Exists(authPath))
+        {
+            Console.WriteLine($"Файл auth.json не найден по пути: {authPath}");
+            return;
+        }
+
+        var authJson = await File.ReadAllTextAsync(authPath);
+        var authData = JObject.Parse(authJson);
+
+        var userEntry = authData[discordId];
+        if (userEntry == null)
+        {
+            Console.WriteLine($"Пользователь с Discord ID {discordId} не найден в auth.json");
+            return;
+        }
+
+        string? cikey = userEntry["cikey"]?.ToString();
+        if (string.IsNullOrWhiteSpace(cikey))
+        {
+            Console.WriteLine($"CIKEY отсутствует или пуст для пользователя {discordId}");
+            return;
+        }
+
+        var sponsorPath = _config.SponsorBDpath;
+        JObject sponsorData;
+
+        if (File.Exists(sponsorPath))
+        {
+            var sponsorJson = await File.ReadAllTextAsync(sponsorPath);
+            sponsorData = JObject.Parse(sponsorJson);
+        }
+        else
+        {
+            Console.WriteLine($"Файл sponsor.json не найден, будет создан новый: {sponsorPath}");
+            sponsorData = new JObject();
+        }
+
+        string username = after.Username ?? "Неизвестный пользователь";
+
+        foreach (var role in addedRoles)
+        {
+            if (role.Id == _config.GrayTide)
+            {
+                sponsorData[cikey] = "GrayTide";
+                announce("Грейтайд", username, cikey, false);
+            }
+            else if (role.Id == _config.Revolutionary)
+            {
+                sponsorData[cikey] = "Revolutionary";
+                announce("Революционер", username, cikey, false);
+            }
+            else if (role.Id == _config.Syndicate)
+            {
+                sponsorData[cikey] = "Syndicate";
+                announce("Синдикат", username, cikey, false);
+            }
+            else if (role.Id == _config.SpaceNinja)
+            {
+                sponsorData[cikey] = "SpaceNinja";
+                announce("Космический ниндзя", username, cikey, false);
+            }
+        }
+
+        foreach (var role in removedRoles)
+        {
+            if (role.Id == _config.GrayTide)
+            {
+                sponsorData.Remove(cikey);
+                announce("GrayTide", username, cikey, true);
+            }
+            else if (role.Id == _config.Revolutionary)
+            {
+                sponsorData.Remove(cikey);
+                announce("Revolutionary", username, cikey, true);
+            }
+            else if (role.Id == _config.Syndicate)
+            {
+                sponsorData.Remove(cikey);
+                announce("Syndicate", username, cikey, true);
+            }
+            else if (role.Id == _config.SpaceNinja)
+            {
+                sponsorData.Remove(cikey);
+                announce("SpaceNinja", username, cikey, true);
+            }
+        }
+
+        await File.WriteAllTextAsync(sponsorPath, sponsorData.ToString());
+        Console.WriteLine($"Спонсорские данные обновлены для CIKEY: {cikey}");
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Ошибка при обновлении спонсорских данных: {ex}");
+    }
+}
+
 
     private async void announce(string sponsorRank, string username, string cikey, bool removed)
     {
