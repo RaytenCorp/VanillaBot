@@ -143,6 +143,7 @@ public class Config
     public required ulong WardenRoleID { get; set; }
     public required ulong ChiefOfGuardRoleID { get; set; }
     public required ulong MRoleID { get; set; }
+    //Спонсорки
     public required ulong GrayTide { get; set; }
     public required ulong Revolutionary { get; set; }
     public required ulong Syndicate { get; set; }
