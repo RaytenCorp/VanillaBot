@@ -21,7 +21,6 @@ public class UserJoinHandler
     public void Initialize()
     {
         _client.UserJoined += CheckMute;
-        _client.UserJoined += CheckSponsor;
         _client.UserJoined += Subscribe;
         _client.UserJoined += CheckAuth;
         Console.WriteLine("UserJoinHandler инициализирован.");

@@ -100,8 +100,8 @@ public class RoleUpdateHandler
             {
                 return;
             }
-            
-            if (highestRank == SponsorRank.None && )
+
+            if (highestRank == SponsorRank.None)
             {
                 if (sponsorData.Remove(cikey))
                     Console.WriteLine($"Удалён {cikey} из sponsor.json (нет спонсорских ролей).");
