@@ -83,19 +83,25 @@ public class RoleUpdateHandler
                 { _config.Syndicate, SponsorRank.Syndicate },
                 { _config.SpaceNinja, SponsorRank.SpaceNinja }
             };
-
+            bool issponsorrole = false;
             // Определение самой высокой роли
             SponsorRank highestRank = SponsorRank.None;
             foreach (var role in after.Roles)
             {
                 if (roleToRank.TryGetValue(role.Id, out var rank))
                 {
+                    issponsorrole = true;
                     if (rank > highestRank)
                         highestRank = rank;
                 }
             }
 
-            if (highestRank == SponsorRank.None)
+            if(!issponsorrole)
+            {
+                return;
+            }
+            
+            if (highestRank == SponsorRank.None && )
             {
                 if (sponsorData.Remove(cikey))
                     Console.WriteLine($"Удалён {cikey} из sponsor.json (нет спонсорских ролей).");
@@ -113,7 +119,6 @@ public class RoleUpdateHandler
             }
 
             await File.WriteAllTextAsync(_config.SponsorBDpath, sponsorData.ToString());
-            Console.WriteLine($"Спонсорские данные обновлены для CIKEY: {cikey}");
         }
         catch (Exception ex)
         {
