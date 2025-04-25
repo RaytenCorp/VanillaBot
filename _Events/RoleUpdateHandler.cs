@@ -27,13 +27,25 @@ public class RoleUpdateHandler
 
     private async Task HandleRoleChange(Cacheable<SocketGuildUser, ulong> beforeCache, SocketGuildUser after)
     {
+        // Словарь соответствия ролей и enum-значений
+        var roleToRank = new Dictionary<ulong, SponsorRank>
+        {
+            { _config.GrayTide, SponsorRank.GrayTide },
+            { _config.Revolutionary, SponsorRank.Revolutionary },
+            { _config.Syndicate, SponsorRank.Syndicate },
+            { _config.SpaceNinja, SponsorRank.SpaceNinja }
+        };
+
+        if (_config == null || string.IsNullOrWhiteSpace(_config.BDpath) || string.IsNullOrWhiteSpace(_config.SponsorBDpath))
+        {
+            Console.WriteLine("Ошибка: Конфигурация не задана или пути не указаны.");
+            return;
+        }
+
         try
         {
-            if (_config == null || string.IsNullOrWhiteSpace(_config.BDpath) || string.IsNullOrWhiteSpace(_config.SponsorBDpath))
-            {
-                Console.WriteLine("Ошибка: Конфигурация не задана или пути не указаны.");
-                return;
-            }
+            var discordId = after.Id.ToString();
+            Console.WriteLine($"Обработка изменений ролей для пользователя {after.Username}");
 
             var before = await beforeCache.GetOrDownloadAsync();
             if (before == null)
@@ -41,12 +53,10 @@ public class RoleUpdateHandler
                 Console.WriteLine($"Ошибка: Не удалось получить предыдущее состояние пользователя {after.Id}");
                 return;
             }
+            //читаем бдшки
+            var authData = JObject.Parse(await File.ReadAllTextAsync(_config.BDpath));
+            var sponsorData = JObject.Parse(await File.ReadAllTextAsync(_config.SponsorBDpath));
 
-            var discordId = after.Id.ToString();
-            Console.WriteLine($"Обработка изменений ролей для пользователя {discordId} ({after.Username})");
-
-            var authJson = await File.ReadAllTextAsync(_config.BDpath);
-            var authData = JObject.Parse(authJson);
 
             var userEntry = authData[discordId];
             if (userEntry == null)
@@ -62,50 +72,37 @@ public class RoleUpdateHandler
                 return;
             }
 
-            JObject sponsorData;
-            if (File.Exists(_config.SponsorBDpath))
-            {
-                sponsorData = JObject.Parse(await File.ReadAllTextAsync(_config.SponsorBDpath));
-            }
-            else
-            {
-                Console.WriteLine($"Файл sponsor.json не найден, будет создан новый.");
-                sponsorData = new JObject();
-            }
-
             string username = after.Username ?? "Неизвестный пользователь";
 
-            // Словарь соответствия ролей и enum-значений
-            var roleToRank = new Dictionary<ulong, SponsorRank>
-            {
-                { _config.GrayTide, SponsorRank.GrayTide },
-                { _config.Revolutionary, SponsorRank.Revolutionary },
-                { _config.Syndicate, SponsorRank.Syndicate },
-                { _config.SpaceNinja, SponsorRank.SpaceNinja }
-            };
-            bool issponsorrole = false;
             // Определение самой высокой роли
             SponsorRank highestRank = SponsorRank.None;
+            bool wassponsor = false;
+
             foreach (var role in after.Roles)
             {
                 if (roleToRank.TryGetValue(role.Id, out var rank))
                 {
-                    issponsorrole = true;
                     if (rank > highestRank)
                         highestRank = rank;
                 }
             }
 
-            if(!issponsorrole)
+            foreach (var role in before.Roles)
             {
-                return;
+                if (roleToRank.TryGetValue(role.Id, out var rank))
+                {
+                    wassponsor = true;
+                }
             }
 
             if (highestRank == SponsorRank.None)
             {
-                if (sponsorData.Remove(cikey))
-                    Console.WriteLine($"Удалён {cikey} из sponsor.json (нет спонсорских ролей).");
-                announce(highestRank.ToString(), username, cikey, true);
+                if(wassponsor)
+                {
+                    if (sponsorData.Remove(cikey))
+                        Console.WriteLine($"Удалён {cikey} из sponsor.json (нет спонсорских ролей).");
+                    announce(highestRank.ToString(), username, cikey, true);
+                }
             }
             else
             {
@@ -116,6 +113,7 @@ public class RoleUpdateHandler
                     announce(highestRank.ToString(), username, cikey, false);
                     Console.WriteLine($"Обновлен ранг {cikey} -> {highestRank}");
                 }
+
             }
 
             await File.WriteAllTextAsync(_config.SponsorBDpath, sponsorData.ToString());
@@ -132,8 +130,8 @@ public class RoleUpdateHandler
         try
         {
             string message = removed
-            ? $"❌ У пользователя **{username}** удалён спонсорский ранг (CIKEY `{cikey}`)."
-            : $"✅ Пользователю **{username}** установлен ранг **{sponsorRank}** по CIKEY `{cikey}`.";
+            ? $"❌ У пользователя **{username}** удалён спонсорский ранг."
+            : $"✅ Пользователю **{username}** установлен ранг **{sponsorRank}**.";
 
             var logChannel = _client.GetChannel(_config.HostChannelID) as IMessageChannel;
             if (logChannel == null)
