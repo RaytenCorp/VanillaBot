@@ -35,7 +35,14 @@ public class RoleUpdateHandler
             { _config.Syndicate, SponsorRank.Syndicate },
             { _config.SpaceNinja, SponsorRank.SpaceNinja }
         };
-
+        // Словарь соответствия ролей и деняк
+        var roleToRoyalty = new Dictionary<SponsorRank, decimal>
+        {
+            { SponsorRank.GrayTide, 200m},
+            { SponsorRank.Revolutionary, 400m},
+            { SponsorRank.Syndicate, 800m},
+            { SponsorRank.SpaceNinja, 1200m}
+        };
         if (_config == null || string.IsNullOrWhiteSpace(_config.BDpath) || string.IsNullOrWhiteSpace(_config.SponsorBDpath))
         {
             Console.WriteLine("Ошибка: Конфигурация не задана или пути не указаны.");
@@ -99,6 +106,7 @@ public class RoleUpdateHandler
             {
                 if(wassponsor)
                 {
+                    await RoyaltyManager.SetProfitAsync(cikey, 0);
                     if (sponsorData.Remove(cikey))
                         Console.WriteLine($"Удалён {cikey} из sponsor.json (нет спонсорских ролей).");
                     announce(highestRank.ToString(), username, cikey, true);
@@ -110,10 +118,12 @@ public class RoleUpdateHandler
                 if (oldRank != highestRank.ToString())
                 {
                     sponsorData[cikey] = highestRank.ToString();
+
+                    await RoyaltyManager.SetProfitAsync(cikey, roleToRoyalty[highestRank]);
+
                     announce(highestRank.ToString(), username, cikey, false);
                     Console.WriteLine($"Обновлен ранг {cikey} -> {highestRank}");
                 }
-
             }
 
             await File.WriteAllTextAsync(_config.SponsorBDpath, sponsorData.ToString());
