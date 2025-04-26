@@ -20,7 +20,7 @@ namespace VanillaBot
                 .WithFooter(footer => footer.Text = "Rayten")
                 .Build();
 
-            await RespondAsync(embed: embed);
+            await RespondAsync(embed: embed, ephemeral: true);
         }
     }
 }

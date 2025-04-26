@@ -21,7 +21,6 @@ namespace VanillaBot
             {
                 totalProfit += royalty.Value;
             }
-            totalProfit *= 0.9m;
             totalProfit -= PeriodicLoss;
 
             return totalProfit;
@@ -29,6 +28,7 @@ namespace VanillaBot
 
         public static async Task SetProfitAsync(string itemName, decimal profit)
         {
+            profit *=0.9m;
             var royalties = await LoadRoyaltiesAsync();
             var (totalProfit, totalLoss) = await LoadTotalsAsync();
 
