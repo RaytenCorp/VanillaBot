@@ -12,6 +12,21 @@ namespace VanillaBot
         private static readonly string RoyaltiesFilePath = Path.Combine("data", "royalties.json");
         private static readonly string TotalsFilePath = Path.Combine("data", "royalty_totals.txt");
 
+        public static async Task<decimal> CalculateCurrentProfitAsync()
+        {
+            var royalties = await LoadRoyaltiesAsync();
+            decimal totalProfit = 0;
+            
+            foreach (var royalty in royalties)
+            {
+                totalProfit += royalty.Value;
+            }
+            totalProfit *= 0.9m;
+            totalProfit -= PeriodicLoss;
+
+            return totalProfit;
+        }
+
         public static async Task SetProfitAsync(string itemName, decimal profit)
         {
             var royalties = await LoadRoyaltiesAsync();
@@ -35,12 +50,6 @@ namespace VanillaBot
             var (totalProfit, totalLoss) = await LoadTotalsAsync();
             totalLoss += PeriodicLoss;
             await SaveTotalsAsync(totalProfit, totalLoss);
-        }
-
-        public static async Task<decimal> CalculateTotalProfitAsync()
-        {
-            var (totalProfit, totalLoss) = await LoadTotalsAsync();
-            return totalProfit - totalLoss;
         }
 
         public static async Task<(decimal totalProfit, decimal totalLoss)> GetOverallStatsAsync()
