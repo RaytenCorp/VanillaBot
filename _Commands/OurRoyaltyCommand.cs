@@ -24,7 +24,7 @@ namespace VanillaBot
                 var user = Context.Guild.GetUser(ulong.Parse(discordId));
                 if (user != null)
                 {
-                    donorsString.AppendLine($"<@{user.Id}>, \n");
+                    donorsString.AppendLine($"<@{user.Id}>");
                 }
             }
 
