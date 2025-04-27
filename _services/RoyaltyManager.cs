@@ -56,6 +56,19 @@ namespace VanillaBot
         {
             return await LoadTotalsAsync();
         }
+        public static async Task<string[]> GetSortedDiscordIdsByRoyaltiesAsync()
+        {
+            // Загружаем словарь с выплатами
+            var royalties = await LoadRoyaltiesAsync();
+
+            // Сортируем словарь по значениям (по убыванию)
+            var sortedRoyalties = royalties
+                .OrderByDescending(entry => entry.Value)  // Сортируем по убыванию
+                .Select(entry => entry.Key)  // Получаем только Discord ID (ключи)
+                .ToArray();  // Преобразуем в массив строк
+
+            return sortedRoyalties;
+        }
 
         private static async Task<Dictionary<string, decimal>> LoadRoyaltiesAsync()
         {
