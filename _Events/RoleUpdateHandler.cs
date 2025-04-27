@@ -51,6 +51,8 @@ public class RoleUpdateHandler
             Console.WriteLine($"Высший ранг остался таким же ({newRank}). Уходим");
             return;
         }
+        // Устанавливаем роялти
+        await RoyaltyManager.SetProfitAsync(after.Username.ToString(), roleToRoyalty[newRank]);
 
         // Читаем БД
         var sponsorData = JObject.Parse(await File.ReadAllTextAsync(_config.SponsorBDpath));
@@ -62,10 +64,6 @@ public class RoleUpdateHandler
             Console.WriteLine($"У {after.Username} не найден Space Station ID");
             return;
         }
-
-        // Устанавливаем роялти
-        await RoyaltyManager.SetProfitAsync(ssid, roleToRoyalty[newRank]);
-
         // Если подписка закончилась
         if (newRank == SponsorRank.None)
         {
