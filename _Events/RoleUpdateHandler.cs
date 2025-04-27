@@ -73,7 +73,7 @@ public class RoleUpdateHandler
             {
                 Console.WriteLine($"У пользователя {after.Username} закончилась подписка.");
                 announce(
-                    $"У пользователя <@{after.Id}> **({oldRank})** закончилась подписка.",
+                    $"У пользователя <@{after.Id}> **({oldRank})** закончилась подписка.\n **минус** {roleToRoyalty[oldRank]} :c",
                     new Color(255, 255, 255)  // белый
                 );
             }
@@ -81,7 +81,7 @@ public class RoleUpdateHandler
             {
                 Console.WriteLine($"{ssid} НЕ ПОЛУЧИЛОСЬ УДАЛИТЬ!");
                 announce(
-                    $"У пользователя <@{after.Id}> закончилась подписка. **Но удалить не получилось!!!**",
+                    $"У пользователя <@{after.Id}> закончилась подписка.\n**Но удалить не получилось!!!**",
                     new Color(255, 255, 255)
                 );
             }
@@ -90,7 +90,7 @@ public class RoleUpdateHandler
         {
             sponsorData[ssid] = newRank.ToString();
             announce(
-                $"У пользователя <@{after.Id}> изменился уровень подписки: **{oldRank} → {newRank}**",
+                $"У пользователя <@{after.Id}> изменился уровень подписки:\n**{oldRank} → {newRank}**\n **Дэньги:** {roleToRoyalty[newRank]}",
                 GetColor(newRank)
             );
         }
