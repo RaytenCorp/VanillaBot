@@ -52,7 +52,7 @@ public class RoleUpdateHandler
             return;
         }
         // Устанавливаем роялти
-        await RoyaltyManager.SetProfitAsync(after.Username.ToString(), roleToRoyalty[newRank]);
+        await RoyaltyManager.SetProfitAsync(discordId, roleToRoyalty[newRank]);
 
         // Читаем БД
         var sponsorData = JObject.Parse(await File.ReadAllTextAsync(_config.SponsorBDpath));
