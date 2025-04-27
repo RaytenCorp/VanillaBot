@@ -48,7 +48,7 @@ public class RoleUpdateHandler
         // Если ранг не изменился — выходим
         if (newRank == oldRank)
         {
-            Console.WriteLine("Спонсорские роли не поменялись, уходим");
+            Console.WriteLine($"Высший ранг остался таким же ({newRank}). Уходим");
             return;
         }
 
@@ -71,9 +71,9 @@ public class RoleUpdateHandler
         {
             if (sponsorData.Remove(ssid))
             {
-                Console.WriteLine($"У пользователя {discordId} закончилась подписка.");
+                Console.WriteLine($"У пользователя {after.Username} закончилась подписка.");
                 announce(
-                    $"У пользователя {discordId} ({oldRank}) закончилась подписка.",
+                    $"У пользователя {after.Username} ({oldRank}) закончилась подписка.",
                     new Color(255, 255, 255)  // белый
                 );
             }
@@ -81,18 +81,21 @@ public class RoleUpdateHandler
             {
                 Console.WriteLine($"{ssid} НЕ ПОЛУЧИЛОСЬ УДАЛИТЬ!");
                 announce(
-                    $"У пользователя {discordId} закончилась подписка. **Но удалить не получилось!!!**",
+                    $"У пользователя {after.Username} закончилась подписка. **Но удалить не получилось!!!**",
                     new Color(255, 255, 255)
                 );
             }
         }
+        else
+        {
+            sponsorData[ssid] = newRank.ToString();
+            announce(
+                $"У пользователя {after.Username} изменился уровень подписки: **{oldRank} → {newRank}**",
+                GetColor(newRank)
+            );
+        }
 
-        // Обновляем БД новым рангом
-        sponsorData[ssid] = newRank.ToString();
-        announce(
-            $"У пользователя {discordId} изменился уровень подписки: {oldRank} → {newRank}",
-            GetColor(newRank)
-        );
+
 
         await File.WriteAllTextAsync(_config.SponsorBDpath, sponsorData.ToString());
     }
