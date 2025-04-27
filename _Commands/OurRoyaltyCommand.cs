@@ -27,12 +27,6 @@ namespace VanillaBot
                     donorsString.AppendLine($"<@{user.Id}>");
                 }
             }
-
-            // Убираем последнюю запятую и пробел, если они есть
-            if (donorsString.Length > 0)
-                donorsString.Length -= 2;
-
-
             var embed = new EmbedBuilder()
                 .WithTitle("Статистика по бабкам")
                 .WithColor(Color.Gold)
