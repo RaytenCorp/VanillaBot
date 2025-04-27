@@ -25,124 +25,95 @@ public class RoleUpdateHandler
         Console.WriteLine("RoleUpdateHandler инициализирован.");
     }
 
-    private async Task HandleRoleChange(Cacheable<SocketGuildUser, ulong> beforeCache, SocketGuildUser after)
+    private async Task HandleRoleChange(Cacheable<SocketGuildUser, ulong> before, SocketGuildUser after)
     {
-        // Словарь соответствия ролей и enum-значений
-        var roleToRank = new Dictionary<ulong, SponsorRank>
-        {
-            { _config.GrayTide, SponsorRank.GrayTide },
-            { _config.Revolutionary, SponsorRank.Revolutionary },
-            { _config.Syndicate, SponsorRank.Syndicate },
-            { _config.SpaceNinja, SponsorRank.SpaceNinja }
-        };
         // Словарь соответствия ролей и деняк
-        var roleToRoyalty = new Dictionary<SponsorRank, decimal>
+        Dictionary<SponsorRank, decimal> roleToRoyalty = new Dictionary<SponsorRank, decimal>
         {
+            { SponsorRank.None, 0},
             { SponsorRank.GrayTide, 200m},
             { SponsorRank.Revolutionary, 400m},
             { SponsorRank.Syndicate, 800m},
             { SponsorRank.SpaceNinja, 1200m}
         };
-        if (_config == null || string.IsNullOrWhiteSpace(_config.BDpath) || string.IsNullOrWhiteSpace(_config.SponsorBDpath))
+
+        var discordId = after.Id.ToString();
+        Console.WriteLine($"Обработка изменений ролей для пользователя {after.Username}");
+
+        // Получаем состояние до и после
+        var beforeUser = await before.GetOrDownloadAsync();
+        SponsorRank newRank = GetSponsorHighestRank(after.Roles);
+        SponsorRank oldRank = GetSponsorHighestRank(beforeUser.Roles);
+
+        // Если ранг не изменился — выходим
+        if (newRank == oldRank)
         {
-            Console.WriteLine("Ошибка: Конфигурация не задана или пути не указаны.");
+            Console.WriteLine("Спонсорские роли не поменялись, уходим");
             return;
         }
 
-        try
+        // Читаем БД
+        var sponsorData = JObject.Parse(await File.ReadAllTextAsync(_config.SponsorBDpath));
+
+        // Получаем SSID
+        string? ssid = await GetSSID(discordId);
+        if (ssid == null)
         {
-            var discordId = after.Id.ToString();
-            Console.WriteLine($"Обработка изменений ролей для пользователя {after.Username}");
+            Console.WriteLine($"У {after.Username} не найден Space Station ID");
+            return;
+        }
 
-            var before = await beforeCache.GetOrDownloadAsync();
-            if (before == null)
+        // Устанавливаем роялти
+        await RoyaltyManager.SetProfitAsync(ssid, roleToRoyalty[newRank]);
+
+        // Если подписка закончилась
+        if (newRank == SponsorRank.None)
+        {
+            if (sponsorData.Remove(ssid))
             {
-                Console.WriteLine($"Ошибка: Не удалось получить предыдущее состояние пользователя {after.Id}");
-                return;
-            }
-            //читаем бдшки
-            var authData = JObject.Parse(await File.ReadAllTextAsync(_config.BDpath));
-            var sponsorData = JObject.Parse(await File.ReadAllTextAsync(_config.SponsorBDpath));
-
-
-            var userEntry = authData[discordId];
-            if (userEntry == null)
-            {
-                Console.WriteLine($"Пользователь с Discord ID {discordId} не найден в auth.json");
-                return;
-            }
-
-            string? cikey = userEntry["cikey"]?.ToString();
-            if (string.IsNullOrWhiteSpace(cikey))
-            {
-                Console.WriteLine($"CIKEY отсутствует или пуст для пользователя {discordId}");
-                return;
-            }
-
-            string username = after.Username ?? "Неизвестный пользователь";
-
-            // Определение самой высокой роли
-            SponsorRank highestRank = SponsorRank.None;
-            bool wassponsor = false;
-
-            foreach (var role in after.Roles)
-            {
-                if (roleToRank.TryGetValue(role.Id, out var rank))
-                {
-                    if (rank > highestRank)
-                        highestRank = rank;
-                }
-            }
-
-            foreach (var role in before.Roles)
-            {
-                if (roleToRank.TryGetValue(role.Id, out var rank))
-                {
-                    wassponsor = true;
-                }
-            }
-
-            if (highestRank == SponsorRank.None)
-            {
-                if(wassponsor)
-                {
-                    await RoyaltyManager.SetProfitAsync(cikey, 0);
-                    if (sponsorData.Remove(cikey))
-                        Console.WriteLine($"Удалён {cikey} из sponsor.json (нет спонсорских ролей).");
-                    announce(highestRank.ToString(), username, cikey, true);
-                }
+                Console.WriteLine($"У пользователя {discordId} закончилась подписка.");
+                announce(
+                    $"У пользователя {discordId} ({oldRank}) закончилась подписка.",
+                    new Color(255, 255, 255)  // белый
+                );
             }
             else
             {
-                var oldRank = sponsorData[cikey]?.ToString();
-                if (oldRank != highestRank.ToString())
-                {
-                    sponsorData[cikey] = highestRank.ToString();
-
-                    await RoyaltyManager.SetProfitAsync(cikey, roleToRoyalty[highestRank]);
-
-                    announce(highestRank.ToString(), username, cikey, false);
-                    Console.WriteLine($"Обновлен ранг {cikey} -> {highestRank}");
-                }
+                Console.WriteLine($"{ssid} НЕ ПОЛУЧИЛОСЬ УДАЛИТЬ!");
+                announce(
+                    $"У пользователя {discordId} закончилась подписка. **Но удалить не получилось!!!**",
+                    new Color(255, 255, 255)
+                );
             }
+        }
 
-            await File.WriteAllTextAsync(_config.SponsorBDpath, sponsorData.ToString());
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка при обновлении спонсорских данных: {ex}");
-        }
+        // Обновляем БД новым рангом
+        sponsorData[ssid] = newRank.ToString();
+        announce(
+            $"У пользователя {discordId} изменился уровень подписки: {oldRank} → {newRank}",
+            GetColor(newRank)
+        );
+
+        await File.WriteAllTextAsync(_config.SponsorBDpath, sponsorData.ToString());
     }
 
+    private Color GetColor(SponsorRank rank)
+    {
+        return rank switch
+        {
+            SponsorRank.GrayTide => new Color(128, 128, 128),      // Серый
+            SponsorRank.Revolutionary => new Color(128, 0, 128),   // Фиолетовый
+            SponsorRank.Syndicate => new Color(255, 0, 0),         // Красный
+            SponsorRank.SpaceNinja => new Color(0, 255, 0),        // Зелёный
+            SponsorRank.None => new Color(255, 255, 255),          // Белый
+            _ => new Color(255, 255, 255)
+        };
+    }
 
-    private async void announce(string sponsorRank, string username, string cikey, bool removed)
+    private async void announce(string message, Color color)
     {
         try
         {
-            string message = removed
-            ? $"❌ У пользователя **{username}** удалён спонсорский ранг."
-            : $"✅ Пользователю **{username}** установлен ранг **{sponsorRank}**.";
-
             var logChannel = _client.GetChannel(_config.HostChannelID) as IMessageChannel;
             if (logChannel == null)
             {
@@ -153,7 +124,7 @@ public class RoleUpdateHandler
             var embed = new EmbedBuilder()
                 .WithTitle("Обновление спонсорского ранга")
                 .WithDescription(message)
-                .WithColor(Color.DarkPurple)
+                .WithColor(color)
                 .WithCurrentTimestamp()
                 .Build();
 
@@ -164,12 +135,51 @@ public class RoleUpdateHandler
             Console.WriteLine($"Ошибка при отправке лог-сообщения: {ex.Message}");
         }
     }
-public enum SponsorRank
-{
-    None = 1,
-    GrayTide = 2,
-    Revolutionary = 3,
-    Syndicate = 4,
-    SpaceNinja = 5,
-}
+    private SponsorRank GetSponsorHighestRank(IEnumerable<SocketRole> roles)
+    {
+        Dictionary<ulong, SponsorRank> roleToRank = new Dictionary<ulong, SponsorRank>
+        {
+            { _config.GrayTide, SponsorRank.GrayTide },
+            { _config.Revolutionary, SponsorRank.Revolutionary },
+            { _config.Syndicate, SponsorRank.Syndicate },
+            { _config.SpaceNinja, SponsorRank.SpaceNinja }
+        };
+
+        SponsorRank highestRank = SponsorRank.None;
+        foreach (var role in roles)
+        {
+            if (roleToRank.TryGetValue(role.Id, out var rank))
+            {
+                if (rank > highestRank)
+                    highestRank = rank;
+            }
+        }
+        return highestRank;
+    }
+
+    private async Task<string?> GetSSID(string discordId)
+    {
+        if (_config == null || string.IsNullOrWhiteSpace(_config.BDpath) || string.IsNullOrWhiteSpace(_config.SponsorBDpath))
+        {
+            Console.WriteLine("Ошибка: Конфигурация не задана или пути не указаны.");
+            return null;
+        }
+        //читаем бдшки
+        var authData = JObject.Parse(await File.ReadAllTextAsync(_config.BDpath));
+        var userEntry = authData[discordId];
+        if (userEntry == null)
+        {
+            Console.WriteLine($"Пользователь с Discord ID {discordId} не найден в auth.json");
+            return null;
+        }
+        return userEntry["cikey"]?.ToString();
+    }
+    public enum SponsorRank
+    {
+        None = 1,
+        GrayTide = 2,
+        Revolutionary = 3,
+        Syndicate = 4,
+        SpaceNinja = 5,
+    }
 }
