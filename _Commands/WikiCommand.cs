@@ -9,7 +9,7 @@ namespace VanillaBot
         [SlashCommand("wiki", "получить ссылку на вики")]
         public async Task SendTextMessageAsync()
         {
-            string link = "https://vanilla-station.ru/";
+            string link = "https://rayten.ru/";
 
             await RespondAsync($"{link}");
         }

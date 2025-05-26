@@ -13,7 +13,7 @@ public class WhenCommand : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly Config _config;
 
-    public UntieAuthCommand(Config config)
+    public WhenCommand(Config config)
     {
         _config = config;
     }
