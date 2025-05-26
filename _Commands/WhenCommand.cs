@@ -43,9 +43,9 @@ public class WhenCommand : InteractionModuleBase<SocketInteractionContext>
                     if (channel != null)
                     {
                         var message = await channel.GetMessageAsync(messageId);
-                        if (message != null)
+                        if (message is IUserMessage userMessage)
                         {
-                            await message.ReplyAsync("Hello world");
+                            await userMessage.ReplyAsync("Hello world");
                             await RespondAsync("Ответ отправлен на сообщение.", ephemeral: true);
                             return;
                         }
