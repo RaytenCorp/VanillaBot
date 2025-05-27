@@ -40,30 +40,30 @@ public class WhenCommand : InteractionModuleBase<SocketInteractionContext>
 
         }
         if (!string.IsNullOrEmpty(messageLink))
+        {
+            var parts = messageLink.Split('/');
+            if (parts.Length >= 3)
             {
-                var parts = messageLink.Split('/');
-                if (parts.Length >= 3)
-                {
-                    ulong channelId = ulong.Parse(parts[^2]);
-                    ulong messageId = ulong.Parse(parts[^1]);
+                ulong channelId = ulong.Parse(parts[^2]);
+                ulong messageId = ulong.Parse(parts[^1]);
 
-                    var channel = Context.Client.GetChannel(channelId) as IMessageChannel;
-                    if (channel != null)
+                var channel = Context.Client.GetChannel(channelId) as IMessageChannel;
+                if (channel != null)
+                {
+                    var message = await channel.GetMessageAsync(messageId);
+                    if (message is IUserMessage userMessage)
                     {
-                        var message = await channel.GetMessageAsync(messageId);
-                        if (message is IUserMessage userMessage)
-                        {
-                            await userMessage.ReplyAsync(host ? TakeRandomMessage() : "Через час.");
-                            return;
-                        }
+                        await userMessage.ReplyAsync(host ? TakeRandomMessage() : "Через час.");
+                        return;
                     }
                 }
             }
-            else
-            {
+        }
+        else
+        {
 
-                await RespondAsync(host ? TakeRandomMessage() : "Через час.");
-            }
+            await RespondAsync(host ? TakeRandomMessage() : "Через час.");
+        }
     }
     private string TakeRandomMessage()
     {
