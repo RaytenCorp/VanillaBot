@@ -22,7 +22,7 @@ public class UserJoinHandler
     {
         _client.UserJoined += CheckMute;
         _client.UserJoined += Subscribe;
-        _client.UserJoined += CheckAuth;
+        // _client.UserJoined += CheckAuth;
         Console.WriteLine("UserJoinHandler инициализирован.");
     }
 
@@ -74,7 +74,7 @@ public class UserJoinHandler
         {
             // Проверяем, есть ли у пользователя активный мут
             var sanctions = SanctionManager.GetSanctionsForUser(user.Id);
-            
+
             // Ищем активный мут
             var activeMute = sanctions.FirstOrDefault(s =>
                 s.Type == SanctionType.Mute &&

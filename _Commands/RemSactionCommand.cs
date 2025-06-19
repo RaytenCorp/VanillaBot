@@ -24,12 +24,12 @@ public class RemSanctionCommand : InteractionModuleBase<SocketInteractionContext
     {
         // Очищаем старые санкции
         SanctionManager.RemoveExpiredSanctions();
-        
+
         // Проверка прав
-        if (Context.User is not SocketGuildUser sanctionerUser || 
+        if (Context.User is not SocketGuildUser sanctionerUser ||
             !sanctionerUser.Roles.Any(role => _config.RoleSanctionPermissions.Contains(role.Id)))
         {
-            await RespondAsync("Данную команду может выполнять только караульный, часовой, начальник караула и администратор.", 
+            await RespondAsync("Данную команду может выполнять только караульный, часовой, начальник караула и администратор.",
                             ephemeral: true);
             return;
         }
@@ -50,7 +50,7 @@ public class RemSanctionCommand : InteractionModuleBase<SocketInteractionContext
         }
 
         // Удаляем санкцию
-        if (SanctionManager.RemSanction(id))
+        if (await SanctionManager.RemSanction(id))
         {
             var embed = new EmbedBuilder()
                 .WithTitle("Снятие наказания")
@@ -62,7 +62,7 @@ public class RemSanctionCommand : InteractionModuleBase<SocketInteractionContext
                 .Build();
 
             await RespondAsync($"Наказание {id} успешно снято с {user.Mention}", ephemeral: true);
-            
+
             // Отправляем в лог-канал
             var reportChannel = Context.Guild.GetTextChannel(_config.SanctionChannelID);
 

@@ -3,29 +3,33 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Newtonsoft.Json;
+using Discord.WebSocket;
 using Timer = System.Timers.Timer;
+using System.Threading.Tasks;
 
 namespace VanillaBot;
+
 public static class SanctionManager
 {
     private static readonly string FilePath = Path.Combine("data", "sanctions.json");
     private static readonly Timer SanctionCheckTimer = new(60 * 1000); // 1 минута
 
     public static List<SanctionRecord> Sanctions { get; private set; } = new();
-
-    public static event Action<ulong> MuteExpired = delegate { };
+    private static DiscordSocketClient? _client = null;
+    private static Config? _config = null;
 
     static SanctionManager()
     {
-
     }
-    
-    public static void Initialize()
+
+    public static void Initialize(Config config, DiscordSocketClient client)
     {
         LoadSanctions();
         RemoveExpiredSanctions();
-        SanctionCheckTimer.Elapsed += (sender, e) => CheckForExpiredSanctions();
+        SanctionCheckTimer.Elapsed += async (sender, e) => await CheckForExpiredSanctions();
         SanctionCheckTimer.Start();
+        _client = client;
+        _config = config;
         Console.WriteLine("SanctionManager инициализирован.");
     }
 
@@ -44,22 +48,22 @@ public static class SanctionManager
         Sanctions.Add(sanction);
         SaveSanctions();
     }
-    public static bool RemSanction(int id)
+    public static async Task<bool> RemSanction(int id)
     {
         var sanctionToRemove = Sanctions.FirstOrDefault(s => s.ID == id);
-        
+
         if (sanctionToRemove != null)
         {
             if (sanctionToRemove.Type == SanctionType.Mute)
             {
-                MuteExpired?.Invoke(sanctionToRemove.UserId);
+                await unmute(sanctionToRemove.UserId);
             }
 
             Sanctions.RemoveAll(s => s.ID == id);
             SaveSanctions();
             return true;
         }
-        
+
         return false;
     }
     public static ulong? GetUserBySanctionID(int id)
@@ -82,14 +86,14 @@ public static class SanctionManager
         SaveSanctions();
     }
 
-    private static void CheckForExpiredSanctions()
+    private static async Task CheckForExpiredSanctions()
     {
         var expiredSanctions = Sanctions.Where(s => s.Type == SanctionType.Mute && s.MuteExpiry.HasValue && s.MuteExpiry <= DateTime.UtcNow).ToList();
         foreach (var sanction in expiredSanctions)
         {
             sanction.Type = SanctionType.Warn;
             sanction.MuteExpiry = null;
-            MuteExpired?.Invoke(sanction.UserId);
+            await unmute(sanction.UserId);
         }
 
         SaveSanctions();
@@ -114,6 +118,27 @@ public static class SanctionManager
         }
         var json = JsonConvert.SerializeObject(Sanctions, Formatting.Indented);
         File.WriteAllText(FilePath, json);
+    }
+
+    private static async Task unmute(ulong userId)
+    {
+        if (_client == null || _config == null)
+            return;
+
+        var guild = _client.GetGuild(_config.GuildId);
+        var muteRole = guild.GetRole(_config.MuteRoleID);
+
+
+
+        var guildUser = guild.GetUser(userId);
+        if (guildUser == null)
+        {
+            Console.WriteLine($"Хотели бы мы его размутить, но пользователя нет на сервере");
+            return;
+        }
+
+        // Удаляем роль
+        await guildUser.RemoveRoleAsync(muteRole);
     }
 }
 

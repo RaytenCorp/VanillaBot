@@ -21,8 +21,8 @@ class Program
     private static DiscordSocketClient _client = new DiscordSocketClient(clientConfig);
     private static InteractionService _commands = new InteractionService(_client.Rest);
 
-    /* 
-    Это контейнер для управления зависимостями (Dependency Injection). 
+    /*
+    Это контейнер для управления зависимостями (Dependency Injection).
     Он позволяет регистрировать и предоставлять экземпляры объектов, которые нужны для работы разных частей бота.
     */
     private static IServiceProvider _services = null!;
@@ -85,8 +85,7 @@ class Program
             await guild.DownloadUsersAsync();
         }
         // Инициализация менеджеров
-        LocalEventManager.Initialize(_client, _config);
-        SanctionManager.Initialize();
+        SanctionManager.Initialize(_config, _client);
         AWarnManager.Initialize();
 
         // ивент захода пользователя
@@ -139,7 +138,7 @@ class Program
             "Здесь вы можете подписаться (или отписаться) на различные уведомления!\n\n p.s. я пока что сам не знаю что делает роль Хайпоп, потом разберёмся"
         );
     }
-    //обработчик для комманд 
+    //обработчик для комманд
     private static async Task HandleInteractionAsync(SocketInteraction interaction)
     {
         var context = new SocketInteractionContext(_client, interaction);
