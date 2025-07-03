@@ -51,8 +51,6 @@ public class RoleUpdateHandler
             Console.WriteLine($"Высший ранг остался таким же ({newRank}). Уходим");
             return;
         }
-        // Устанавливаем роялти
-        await RoyaltyManager.SetProfitAsync(discordId, roleToRoyalty[newRank]);
 
         // Читаем БД
         var sponsorData = JObject.Parse(await File.ReadAllTextAsync(_config.SponsorBDpath));
