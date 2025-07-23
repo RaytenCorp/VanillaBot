@@ -70,13 +70,14 @@ public static class ConfigLoader
                 WardenRoleID = 123456789012345678,
                 ChiefOfGuardRoleID = 123456789012345678,
                 MRoleID = 123456789012345678,
+                PingRoleID = 123456789012345678,
                 //sponsor-roles
                 GrayTide = 123456789012345678,
                 Revolutionary = 123456789012345678,
                 Syndicate = 123456789012345678,
                 SpaceNinja = 123456789012345678
             };
-            await SaveConfigAsync(defaultConfig); 
+            await SaveConfigAsync(defaultConfig);
             return defaultConfig;
         }
 
@@ -98,29 +99,29 @@ public class Config
 {
     public required string Token { get; set; }
     public required string BDpath { get; set; }
-    public required string SponsorBDpath { get; set; }    
+    public required string SponsorBDpath { get; set; }
     public required ulong GuildId { get; set; }
     public required ulong HostChannelID { get; set; }
     public required ulong AWarnsChannelId { get; set; }
     public required ulong SanctionChannelID { get; set; }
-    public required ulong ReportChannelId { get; set; } 
-    public required ulong PhotocardsChannelId { get; set; } 
-    public required ulong HelpChannelId { get; set; } 
-    public required ulong VideoChannelId { get; set; } 
-    public required ulong AudioChannelId { get; set; } 
-    public required ulong MemesChannelId { get; set; } 
-    public required ulong DrawingChannelId { get; set; } 
-    public required ulong QuentaChannelId { get; set; } 
-    public required ulong ReviewsChannelId { get; set; } 
-    public required ulong HeadHuntChannelId { get; set; } 
-    public required ulong TimeChannelId { get; set; } 
-    public required ulong SS14ReportsChannelId { get; set; } 
-    public required ulong AppealChannelId { get; set; } 
-    public required ulong AdminReportsChannelId { get; set; } 
-    public required ulong interrogationChannelId { get; set; } 
-    public required ulong arrivalChannelId { get; set; } 
-    public required ulong roleselectChannelId { get; set; } 
-    public required ulong EventReportChannelId { get; set; } 
+    public required ulong ReportChannelId { get; set; }
+    public required ulong PhotocardsChannelId { get; set; }
+    public required ulong HelpChannelId { get; set; }
+    public required ulong VideoChannelId { get; set; }
+    public required ulong AudioChannelId { get; set; }
+    public required ulong MemesChannelId { get; set; }
+    public required ulong DrawingChannelId { get; set; }
+    public required ulong QuentaChannelId { get; set; }
+    public required ulong ReviewsChannelId { get; set; }
+    public required ulong HeadHuntChannelId { get; set; }
+    public required ulong TimeChannelId { get; set; }
+    public required ulong SS14ReportsChannelId { get; set; }
+    public required ulong AppealChannelId { get; set; }
+    public required ulong AdminReportsChannelId { get; set; }
+    public required ulong interrogationChannelId { get; set; }
+    public required ulong arrivalChannelId { get; set; }
+    public required ulong roleselectChannelId { get; set; }
+    public required ulong EventReportChannelId { get; set; }
     public Dictionary<ulong, List<ulong>> RolePermissions { get; set; } = new();
     public Dictionary<ulong, List<ulong>> RoleManagementPermissions { get; set; } = new();
     public List<ulong> RoleSanctionPermissions { get; set; } = new();
@@ -132,7 +133,7 @@ public class Config
     public required ulong NewsRoleID { get; set; }
     public required ulong EventsRoleID { get; set; }
     public required ulong HighPopRoleID { get; set; }
-    public required ulong RoundsRoleID { get; set; }    
+    public required ulong RoundsRoleID { get; set; }
     //Роли
     public required ulong HOSTRoleID { get; set; }
     public required ulong AdminRoleID { get; set; }
@@ -143,6 +144,7 @@ public class Config
     public required ulong WardenRoleID { get; set; }
     public required ulong ChiefOfGuardRoleID { get; set; }
     public required ulong MRoleID { get; set; }
+    public required ulong PingRoleID { get; set; }
     //Спонсорки
     public required ulong GrayTide { get; set; }
     public required ulong Revolutionary { get; set; }

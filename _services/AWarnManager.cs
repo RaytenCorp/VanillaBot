@@ -16,7 +16,7 @@ public static class AWarnManager
     {
 
     }
-    
+
     public static void Initialize()
     {
         LoadAwarns();
@@ -41,14 +41,14 @@ public static class AWarnManager
     public static bool RemAwarn(int id)
     {
         var AwarnToRemove = Awarns.FirstOrDefault(s => s.ID == id);
-        
+
         if (AwarnToRemove != null)
         {
             Awarns.RemoveAll(s => s.ID == id);
             SaveAwarns();
             return true;
         }
-        
+
         return false;
     }
 
@@ -67,7 +67,7 @@ public static class AWarnManager
     {
         var awarnList = GetAwarnsForUser(userId);
         float total = 0f;
-        
+
         foreach (var awarn in awarnList)
         {
             switch (awarn.Type)
@@ -80,10 +80,9 @@ public static class AWarnManager
                     break;
             }
         }
-        
+
         return total;
     }
-
 
     public static void RemoveExpiredAwarns()
     {
@@ -95,7 +94,7 @@ public static class AWarnManager
 
     private static void LoadAwarns()
     {
-        try 
+        try
         {
             var json = File.ReadAllText(FilePath);
             Awarns = JsonConvert.DeserializeObject<List<AwarnRecord>>(json) ?? new List<AwarnRecord>();
