@@ -14,7 +14,7 @@ public class CallCommand : InteractionModuleBase<SocketInteractionContext>
     private static readonly TimeSpan StartTime = new(9, 0, 0);
     private static readonly TimeSpan EndTime = new(22, 0, 0);
 
-    private const int CooldownSeconds = 300; // 5 минут на всю команду
+    private const int CooldownSeconds = 3600; // 60 минут на всю команду
 
     public CallCommand(Config config)
     {
@@ -54,7 +54,7 @@ public class CallCommand : InteractionModuleBase<SocketInteractionContext>
         if (!string.IsNullOrWhiteSpace(message))
             callText += $"\n\n{message}";
 
-        callText += $"\n\n> если хотите отписаться/подписаться на уведомления, сделать вы это можете [здесь](https://discord.com/channels/{Context.Guild.Id}/{_config.roleselectChannelId})";
+        callText += $"\n\n-# если хотите отписаться/подписаться на уведомления, сделать вы это можете [здесь](https://discord.com/channels/{Context.Guild.Id}/{_config.roleselectChannelId})";
 
         // Отправляем с разрешённым пингом
         await RespondAsync(callText, allowedMentions: new AllowedMentions
