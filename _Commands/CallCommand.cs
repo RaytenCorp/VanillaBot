@@ -14,7 +14,7 @@ public class CallCommand : InteractionModuleBase<SocketInteractionContext>
     private static readonly TimeSpan StartTime = new(9, 0, 0);
     private static readonly TimeSpan EndTime = new(22, 0, 0);
 
-    private const int CooldownSeconds = 3600; // 60 минут на всю команду
+    private const int CooldownSeconds = 5400; // 90 минут на всю команду
 
     public CallCommand(Config config)
     {
@@ -39,10 +39,20 @@ public class CallCommand : InteractionModuleBase<SocketInteractionContext>
         var diff = (DateTime.UtcNow - _lastCallUtc).TotalSeconds;
         if (diff < CooldownSeconds)
         {
-            var left = CooldownSeconds - diff;
-            await RespondAsync($"Подожди ещё {Math.Ceiling(left)} сек. перед следующим вызовом.", ephemeral: true);
+            var left = TimeSpan.FromSeconds(CooldownSeconds - diff);
+
+            string leftText;
+            if (left.TotalHours >= 1)
+                leftText = $"{(int)left.TotalHours} ч. {left.Minutes} мин.";
+            else if (left.TotalMinutes >= 1)
+                leftText = $"{left.Minutes} мин. {left.Seconds} сек.";
+            else
+                leftText = $"{left.Seconds} сек.";
+
+            await RespondAsync($"Подожди ещё {leftText} перед следующим вызовом.", ephemeral: true);
             return;
         }
+
 
         // Обновляем кулдаун
         _lastCallUtc = DateTime.UtcNow;
