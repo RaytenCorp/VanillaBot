@@ -72,7 +72,6 @@ public static class SanctionManager
         return sanction?.UserId;
     }
 
-
     public static List<SanctionRecord> GetSanctionsForUser(ulong userId)
     {
         return Sanctions.Where(s => s.UserId == userId).ToList();
@@ -82,7 +81,6 @@ public static class SanctionManager
     {
         Sanctions.RemoveAll(s =>
             s.DateIssued.AddMonths(3) <= DateTime.UtcNow);
-
         SaveSanctions();
     }
 
@@ -91,6 +89,7 @@ public static class SanctionManager
         var expiredSanctions = Sanctions.Where(s => s.Type == SanctionType.Mute && s.MuteExpiry.HasValue && s.MuteExpiry <= DateTime.UtcNow).ToList();
         foreach (var sanction in expiredSanctions)
         {
+            Console.WriteLine($"нашли истекший мут у {sanction.UserId}");
             sanction.Type = SanctionType.Warn;
             sanction.MuteExpiry = null;
             await unmute(sanction.UserId);
@@ -98,7 +97,6 @@ public static class SanctionManager
 
         SaveSanctions();
     }
-
 
     private static void LoadSanctions()
     {
@@ -122,13 +120,12 @@ public static class SanctionManager
 
     private static async Task unmute(ulong userId)
     {
+        Console.WriteLine($"Анмутим {userId}");
         if (_client == null || _config == null)
             return;
 
         var guild = _client.GetGuild(_config.GuildId);
         var muteRole = guild.GetRole(_config.MuteRoleID);
-
-
 
         var guildUser = guild.GetUser(userId);
         if (guildUser == null)
