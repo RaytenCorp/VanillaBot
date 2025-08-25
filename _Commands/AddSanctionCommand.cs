@@ -22,9 +22,10 @@ public class SanctionCommand : InteractionModuleBase<SocketInteractionContext>
         [Summary("user", "Пользователь, которого наказываем")] IUser user,
         [Summary("description", "Описание, обязательно заполните его НОРМАЛЬНО")] string description)
     {
+
         //прежде всего очищаем старые санкции
         SanctionManager.RemoveExpiredSanctions();
-        
+
         // Проверка, имеет ли пользователь разрешение на выполнение команды
         var SanctionerUser = Context.User as SocketGuildUser;
         if (SanctionerUser == null || !SanctionerUser.Roles.Any(role => _config.RoleSanctionPermissions.Contains(role.Id)))
@@ -35,16 +36,20 @@ public class SanctionCommand : InteractionModuleBase<SocketInteractionContext>
 
 
         var userId = user.Id;
+        Console.WriteLine($"мутим {userId}");
         var guildUser = Context.Guild.GetUser(userId);
         if (guildUser == null)
+        {
+            Console.WriteLine($"Пользователь не найден в гильдии");
             return;
+        }
+
 
         // берем данные мутов пользователя
         var userSanctions = SanctionManager.GetSanctionsForUser(userId);
 
         SanctionType sanctionType;
         DateTime? muteExpiry = null;
-
 
         string sanctionDetails = "";
         int sanctionNumber = await CounterManager.GetNextCounterAsync("sanctionCounter");
