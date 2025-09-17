@@ -126,7 +126,7 @@ public static class SanctionManager
 
         var guild = _client.GetGuild(_config.GuildId);
         var muteRole = guild.GetRole(_config.MuteRoleID);
-
+        await guild.DownloadUsersAsync();
         var guildUser = guild.GetUser(userId);
         if (guildUser == null)
         {

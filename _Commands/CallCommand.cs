@@ -59,7 +59,8 @@ public class CallCommand : InteractionModuleBase<SocketInteractionContext>
 
         // Формируем текст
         string roleMention = $"<@&{_config.PingRoleID}>";
-        string callText = $"{user.Mention} приглашает сыграть всех на <a:pepe_hyped:1276604737839435786> Rayten <a:pepe_hyped:1276604737839435786> {roleMention}";
+        string caller = user != null ? user.Mention : "кто-то";
+        string callText = $"{caller} приглашает сыграть всех на Rayten <a:pepe_hyped:1276604737839435786> {roleMention}";
 
         if (!string.IsNullOrWhiteSpace(message))
             callText += $"\n\n{message}";
