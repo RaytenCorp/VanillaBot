@@ -95,7 +95,7 @@ public class MonikerCommand : InteractionModuleBase<SocketInteractionContext>
         await File.WriteAllTextAsync(jsonPath, updatedJson);
 
         // Финальное сообщение
-        await RespondAsync($"✨ {requester.Mention}, твоё новое прозвище: **{moniker}** ✨");
+        await message.ModifyAsync(m => m.Content = $"✨ {requester.Mention}, твоё новое прозвище: **{moniker}** ✨");
     }
 
     private string CreateCountdownMessage(IUser user, int secondsRemaining)
