@@ -16,6 +16,8 @@ public class MonikerCommand : InteractionModuleBase<SocketInteractionContext>
     private readonly string poolPath = "data/moniker/monikerpool.txt";
     private readonly string jsonPath = "data/moniker/monikers.json";
 
+    private static bool _isGenerating = false;
+
     [SlashCommand("moniker", "Получить или узнать прозвище")]
     public async Task GetMonikerAsync(
         [Summary("user", "пользователь (необязательно)")] IUser? targetUser = null)
@@ -53,6 +55,12 @@ public class MonikerCommand : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
+        if (_isGenerating)
+        {
+            await RespondAsync("⏳ Подожди, сейчас уже генерируется другое прозвище.", ephemeral: true);
+            return;
+        }
+        _isGenerating = true;
         // Загружаем пул
         if (!File.Exists(poolPath))
         {
@@ -88,14 +96,14 @@ public class MonikerCommand : InteractionModuleBase<SocketInteractionContext>
             await Task.Delay(1000);
             await message.ModifyAsync(m => m.Content = CreateCountdownMessage(requester, i));
         }
+        // Финальное сообщение
+        await message.ModifyAsync(m => m.Content = $"✨ {requester.Mention}, твоё новое прозвище: **{moniker}** ✨");
 
         // Сохраняем в JSON
         assigned[targetId] = moniker;
         var updatedJson = JsonSerializer.Serialize(assigned, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(jsonPath, updatedJson);
-
-        // Финальное сообщение
-        await message.ModifyAsync(m => m.Content = $"✨ {requester.Mention}, твоё новое прозвище: **{moniker}** ✨");
+        _isGenerating = false;
     }
 
     private string CreateCountdownMessage(IUser user, int secondsRemaining)
