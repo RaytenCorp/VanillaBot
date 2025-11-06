@@ -26,10 +26,8 @@ public class MonikerCommand : InteractionModuleBase<SocketInteractionContext>
         var target = targetUser ?? requester;
         var targetId = target.Id.ToString();
 
-        // Готовим пути
         Directory.CreateDirectory("data/moniker");
 
-        // Загружаем json
         Dictionary<string, string> assigned = new();
         if (File.Exists(jsonPath))
         {
@@ -38,20 +36,24 @@ public class MonikerCommand : InteractionModuleBase<SocketInteractionContext>
                 assigned = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new();
         }
 
-        // Если указан другой пользователь — просто показать его прозвище
         if (targetUser != null)
         {
             if (assigned.TryGetValue(targetId, out var existing))
-                await RespondAsync($"Прозвище пользователя {target.Mention}: **{existing}**");
+                await RespondAsync(
+                    $"Прозвище пользователя {target.Mention}: **{existing}**",
+                    allowedMentions: AllowedMentions.None
+                );
             else
-                await RespondAsync($"У пользователя {target.Mention} пока нет прозвища.");
+                await RespondAsync(
+                    $"У пользователя {target.Mention} пока нет прозвища.",
+                    allowedMentions: AllowedMentions.None
+                );
             return;
         }
 
-        // Проверяем — есть ли уже у вызвавшего пользователя
         if (assigned.ContainsKey(targetId))
         {
-            await RespondAsync($"У тебя уже есть прозвище: **{assigned[targetId]}**");
+            await RespondAsync($"У тебя уже есть прозвище: **{assigned[targetId]}**", allowedMentions: AllowedMentions.None);
             return;
         }
 
@@ -61,6 +63,7 @@ public class MonikerCommand : InteractionModuleBase<SocketInteractionContext>
             return;
         }
         _isGenerating = true;
+
         // Загружаем пул
         if (!File.Exists(poolPath))
         {
@@ -79,25 +82,30 @@ public class MonikerCommand : InteractionModuleBase<SocketInteractionContext>
             return;
         }
 
-        // Выбираем случайное имя
         var random = new Random();
         var moniker = pool[random.Next(pool.Count)];
 
-        // Удаляем выбранное из пула
         pool.Remove(moniker);
         await File.WriteAllLinesAsync(poolPath, pool);
 
-        // Обратный отсчёт с прогресс-баром
         int countdown = 10; // секунд до выдачи
         var message = await ReplyAsync(CreateCountdownMessage(requester, countdown));
 
         for (int i = countdown - 1; i >= 0; i--)
         {
             await Task.Delay(1000);
-            await message.ModifyAsync(m => m.Content = CreateCountdownMessage(requester, i));
+            await message.ModifyAsync(m =>
+            {
+                m.Content = CreateCountdownMessage(requester, i);
+                m.AllowedMentions = AllowedMentions.None;
+            });
         }
         // Финальное сообщение
-        await message.ModifyAsync(m => m.Content = $"✨ {requester.Mention}, твоё новое прозвище: **{moniker}** ✨");
+        await message.ModifyAsync(m =>
+        {
+            m.Content = $"✨ {requester.Mention}, твоё новое прозвище: **{moniker}** ✨";
+            m.AllowedMentions = AllowedMentions.None;
+        });
 
         // Сохраняем в JSON
         assigned[targetId] = moniker;
