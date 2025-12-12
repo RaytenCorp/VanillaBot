@@ -8,7 +8,6 @@ namespace VanillaBot;
 
 public class SleepCommand : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly Config _config;
     private readonly Random _rng = new();
 
     private readonly string[] _responses =
@@ -35,7 +34,7 @@ public class SleepCommand : InteractionModuleBase<SocketInteractionContext>
         "Не сплю… *зевает* …совсем…"
     };
 
-    [SlashCommand("спишь?", "привет ванилька ты спишь?")]
+    [SlashCommand("issleep", "привет ванилька ты спишь?")]
     public async Task WhenAsync([Summary("сообщение")] string message)
     {
         string response = _responses[_rng.Next(_responses.Length)];
