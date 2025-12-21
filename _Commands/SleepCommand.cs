@@ -35,7 +35,7 @@ public class SleepCommand : InteractionModuleBase<SocketInteractionContext>
     };
 
     [SlashCommand("issleep", "привет ванилька ты спишь?")]
-    public async Task WhenAsync([Summary("сообщение")] string message)
+    public async Task IsSleepAsync()
     {
         string response = _responses[_rng.Next(_responses.Length)];
         await RespondAsync(response);

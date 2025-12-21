@@ -21,23 +21,8 @@ public class UserJoinHandler
     public void Initialize()
     {
         _client.UserJoined += CheckMute;
-        _client.UserJoined += Subscribe;
         _client.UserJoined += CheckAuth;
         Console.WriteLine("UserJoinHandler инициализирован.");
-    }
-
-    private async Task Subscribe(SocketGuildUser user)
-    {
-        try
-        {
-            await user.AddRoleAsync(user.Guild.GetRole(_config.EventsRoleID));//ивенты
-            await user.AddRoleAsync(user.Guild.GetRole(_config.HighPopRoleID));//хайпоп
-            await user.AddRoleAsync(user.Guild.GetRole(_config.NewsRoleID));//новости
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Ошибка при обработке пользователя {user.Username}: {ex.Message}");
-        }
     }
 
     private async Task CheckAuth(SocketGuildUser user)
@@ -87,9 +72,7 @@ public class UserJoinHandler
 
             //если количество нарушение переваливает за 4 - выдаём роль грязнули
             if (sanctions.Count > 5)
-            {
                 await user.AddRoleAsync(user.Guild.GetRole(_config.PoopRoleID));
-            }
         }
         catch (Exception ex)
         {

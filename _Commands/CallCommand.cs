@@ -63,9 +63,7 @@ public class CallCommand : InteractionModuleBase<SocketInteractionContext>
         string callText = $"{caller} приглашает сыграть всех на Rayten <a:pepe_hyped:1276604737839435786> {roleMention}";
 
         if (!string.IsNullOrWhiteSpace(message))
-            callText += $"\n\n{message}";
-
-        callText += $"\n\n-# если хотите отписаться/подписаться на уведомления, сделать вы это можете [здесь](https://discord.com/channels/{Context.Guild.Id}/{_config.roleselectChannelId})";
+            callText += $"\n\n{caller}: {message}";
 
         // Отправляем с разрешённым пингом
         await RespondAsync(callText, allowedMentions: new AllowedMentions
